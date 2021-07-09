@@ -54,7 +54,7 @@ MAXTHREADS="${2}";
 # Activate Anaconda Environment (HiC)
 conda activate hic
 
-for k in $(ls -d $WORKING_DIR/*); do
+for k in $(ls -d $WORKING_DIR/*/); do
     printf "\n###############################################"
     printf "\n ----- Processins Sample --> ${k#"$WORKING_DIR/"}"
     printf "\n############################################### \n"
