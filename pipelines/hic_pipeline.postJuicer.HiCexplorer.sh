@@ -103,6 +103,8 @@ cd $WORKING_DIR/
 #hicPlotTADs --tracks track.ini -o ${SAMPLE}_TADs_chr11_5019502-5575416_track.png --region chr11:5019502-5575416
 #hicPlotTADs --tracks track.ini -o ${SAMPLE}_TADs_chr2_60471755-61029177_track.png --region chr2:60471755-61029177
 
+#hicAdjustMatrix -m inter_30_10000.corrected.h5 --action keep --chromosomes 2 -o matrix_chr1.h5
+
 hicDifferentialTAD -tm UT1/inter_30_10000.corrected.h5 -cm E22/inter_30_10000.corrected.h5 -td UT1/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT1-E22 -p 0.01 -t 4 -mr all
 hicDifferentialTAD -tm UT1/inter_30_10000.corrected.h5 -cm E23/inter_30_10000.corrected.h5 -td UT1/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT1-E23 -p 0.01 -t 4 -mr all
 hicDifferentialTAD -tm UT1/inter_30_10000.corrected.h5 -cm P10/inter_30_10000.corrected.h5 -td UT1/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT1-P10 -p 0.01 -t 4 -mr all
