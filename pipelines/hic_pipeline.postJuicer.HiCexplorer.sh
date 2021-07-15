@@ -85,7 +85,7 @@ for k in $(ls -d $WORKING_DIR/*/); do
     hicPlotMatrix -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 --clearMaskedBins --region chr11:4769502-5825416 -o ${RESOLUTION}_resolution/${SAMPLE}_${RESOLUTION}_log2_chr11_4769502-5825416_matrix_plot.png --log1p --dpi 300
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicFindTADs \n"
-    hicFindTADs -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 --outPrefix ${RESOLUTION}_resolution/tads_hic_corrected --numberOfProcessors $MAXTHREADS --chromosomes 2 11 --correctForMultipleTesting fdr --maxDepth 50000 --thresholdComparisons 0.05 --delta 0.01
+    hicFindTADs -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 --outPrefix ${RESOLUTION}_resolution/tads_hic_corrected --numberOfProcessors $MAXTHREADS --chromosomes 2 11 --correctForMultipleTesting fdr --maxDepth $((${RESOLUTION}*8)) --thresholdComparisons 0.05 --delta 0.01
     
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicPlotTADs \n"
     # Edit for specific project
