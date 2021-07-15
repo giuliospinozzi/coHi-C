@@ -85,7 +85,7 @@ for k in $(ls -d $WORKING_DIR/*/); do
     hicPlotMatrix -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 --clearMaskedBins --region chr11:4769502-5825416 -o ${RESOLUTION}_resolution/${SAMPLE}_${RESOLUTION}_log2_chr11_4769502-5825416_matrix_plot.png --log1p --dpi 300
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicFindTADs \n"
-    hicFindTADs -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 --outPrefix ${RESOLUTION}_resolution/tads_hic_corrected --numberOfProcessors $MAXTHREADS --chromosomes 2 11 --correctForMultipleTesting fdr --maxDepth $((${RESOLUTION}*8)) --thresholdComparisons 0.05 --delta 0.01
+    hicFindTADs -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 --outPrefix ${RESOLUTION}_resolution/tads_hic_corrected --numberOfProcessors $MAXTHREADS --chromosomes 2 11 --correctForMultipleTesting fdr --maxDepth $((${RESOLUTION}*10)) --thresholdComparisons 0.05 --delta 0.01
     
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicPlotTADs \n"
     # Edit for specific project
@@ -94,8 +94,8 @@ for k in $(ls -d $WORKING_DIR/*/); do
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicDetectLoops \n"
     hicDetectLoops -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.cool -o ${RESOLUTION}_resolution/loops.bedgraph --chromosomes 2 11 --maxLoopDistance 2000000 --windowSize 10 --peakWidth 6 --pValuePreselection 0.05 --pValue 0.05
-    hicPlotMatrix -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.cool -o ${RESOLUTION}_resolution/${SAMPLE}_${RESOLUTION}_chr11_5019502-5575416_matrix_loop.png --log1p --region 11:5019502-5575416 --loops loops.bedgraph --dpi 300
-    hicPlotMatrix -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.cool -o ${RESOLUTION}_resolution/${SAMPLE}_${RESOLUTION}_chr2_60471755-61029177_matrix_loop.png --log1p --region 2:60471755-61029177 --loops loops.bedgraph --dpi 300
+    hicPlotMatrix -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.cool -o ${RESOLUTION}_resolution/${SAMPLE}_${RESOLUTION}_chr11_5019502-5575416_matrix_loop.png --log1p --region 11:5019502-5575416 --loops ${RESOLUTION}_resolution/loops.bedgraph --dpi 300
+    hicPlotMatrix -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.cool -o ${RESOLUTION}_resolution/${SAMPLE}_${RESOLUTION}_chr2_60471755-61029177_matrix_loop.png --log1p --region 2:60471755-61029177 --loops ${RESOLUTION}_resolution/loops.bedgraph --dpi 300
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicPlotViewpoint \n"
     hicPlotViewpoint --matrix ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.cool --region 2:60471755-61029177 --referencePoint 2:60721755-60722677 -o ${RESOLUTION}_resolution/${SAMPLE}_${RESOLUTION}_chr2_60471755-61029177_matrix_ViewPoint.png --dpi 300
