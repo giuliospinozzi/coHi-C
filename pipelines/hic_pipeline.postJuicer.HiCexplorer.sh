@@ -19,6 +19,7 @@ echo "
   REQUIRED VARS and relative ORDER POSITION -> REMEMBER NO SPACES!!!!!!!!!
 	1. WORKING_DIR [/opt/ngs/results] NO / at the end !!
 	2. MAXTHREADS [12]
+  3. RESOLUTION [10000]
 
   NOTES:
   	- Input are post Juicer run
@@ -42,6 +43,7 @@ done
 ##### =================== Start SETTINGS ======================= #####
 WORKING_DIR="${1}";
 MAXTHREADS="${2}";
+RESOLUTION="${3}";
 
 #printf "Folder creation --> ${RESULTS_DIR}/${PROJECT_NAME}/${POOL_NAME}\n"
 #mkdir ${RESULTS_DIR}/${PROJECT_NAME}
@@ -64,30 +66,35 @@ for k in $(ls -d $WORKING_DIR/*/); do
     cd $WORKING_DIR/$SAMPLE
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicConvertFormat \n"
-    hicConvertFormat -m inter_30.hic --inputFormat hic --outputFormat cool -o inter_30.cool --resolutions 10000
-    hicConvertFormat -m inter_30_10000.cool --inputFormat cool --outputFormat h5 -o inter_30_10000.h5
+    hicConvertFormat -m inter_30.hic --inputFormat hic --outputFormat cool -o inter_30.cool --resolutions ${RESOLUTION}
+    hicConvertFormat -m inter_30_${RESOLUTION}.cool --inputFormat cool --outputFormat h5 -o inter_30_${RESOLUTION}.h5
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicCorrectMatrix \n"
-    hicCorrectMatrix correct -m inter_30_10000.h5 --filterThreshold -1.5 5 -o inter_30_10000.corrected.h5
+    hicCorrectMatrix correct -m inter_30_${RESOLUTION}.h5 --filterThreshold -1.5 5 -o inter_30_${RESOLUTION}.corrected.h5
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicMergeMatrixBins \n"
-    hicMergeMatrixBins -m inter_30_10000.corrected.h5 -o inter_30_10000.corrected.nb50.h5 -nb 50
+    hicMergeMatrixBins -m inter_30_${RESOLUTION}.corrected.h5 -o inter_30_${RESOLUTION}.corrected.nb50.h5 -nb 50
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicPCA \n" ##### Too slow!!!!
-    #hicPCA --matrix inter_30_10000.corrected.h5 -o pca1.bedgraph pca2.bedgraph -f bedgraph
+    #hicPCA --matrix inter_30_${RESOLUTION}.corrected.h5 -o pca1.bedgraph pca2.bedgraph -f bedgraph
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicPlotMatrix \n"
     # Edit for specific project
-    hicPlotMatrix -m inter_30_10000.corrected.h5 --clearMaskedBins --region chr2:60221755-61279177 -o ${SAMPLE}_10000_log2_chr2_60221755-61279177_matrix_plot.png --log1p --dpi 150
-    hicPlotMatrix -m inter_30_10000.corrected.h5 --clearMaskedBins --region chr11:4769502-5825416 -o ${SAMPLE}_10000_log2_chr11_4769502-5825416_matrix_plot.png --log1p --dpi 150
+    hicPlotMatrix -m inter_30_${RESOLUTION}.corrected.h5 --clearMaskedBins --region chr2:60221755-61279177 -o ${SAMPLE}_${RESOLUTION}_log2_chr2_60221755-61279177_matrix_plot.png --log1p --dpi 150
+    hicPlotMatrix -m inter_30_${RESOLUTION}.corrected.h5 --clearMaskedBins --region chr11:4769502-5825416 -o ${SAMPLE}_${RESOLUTION}_log2_chr11_4769502-5825416_matrix_plot.png --log1p --dpi 150
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicFindTADs \n"
-    hicFindTADs -m inter_30_10000.corrected.h5 --outPrefix tads_hic_corrected --numberOfProcessors $MAXTHREADS --correctForMultipleTesting fdr --maxDepth 100000 --thresholdComparisons 0.05 --delta 0.01
+    hicFindTADs -m inter_30_${RESOLUTION}.corrected.h5 --outPrefix tads_hic_corrected --numberOfProcessors $MAXTHREADS --correctForMultipleTesting fdr --maxDepth 100000 --thresholdComparisons 0.05 --delta 0.01
     
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicPlotTADs \n"
     # Edit for specific project
     hicPlotTADs --tracks track.ini -o ${SAMPLE}_TADs_chr11_5019502-5575416_track.png --region chr11:5019502-5575416 --dpi 150
     hicPlotTADs --tracks track.ini -o ${SAMPLE}_TADs_chr2_60471755-61029177_track.png --region chr2:60471755-61029177 --dpi 150
+
+    printf "\n>>>>>>>>>> ${SAMPLE} --> hicDetectLoops \n"
+    hicDetectLoops -m inter_30_${RESOLUTION}.cool -o loops.bedgraph --chromosomes 2 11 --maxLoopDistance 2000000 --windowSize 10 --peakWidth 6 --pValuePreselection 0.05 --pValue 0.05
+    hicPlotMatrix -m inter_30_${RESOLUTION}.cool -o ${SAMPLE}_${RESOLUTION}_chr11_3769502-6825416_matrix_loop.png --log1p --region 11:3769502-6825416 --loops loops.bedgraph --dpi 150
+    hicPlotMatrix -m inter_30_${RESOLUTION}.cool -o ${SAMPLE}_${RESOLUTION}_chr2_59221755-62279177_matrix_loop.png --log1p --region 2:59221755-62279177 --loops loops.bedgraph --dpi 150
 done
 
 
@@ -98,20 +105,20 @@ mkdir $WORKING_DIR/analysis
 cd $WORKING_DIR/
 
 #All Samples
-#hicCompareMatrices -m E22/inter_30_10000.corrected.nb50.h5 E23/inter_30_10000.corrected.nb50.h5 --operation log2ratio -o analysis/E22-E23_log2_m50.h5
+#hicCompareMatrices -m E22/inter_30_${RESOLUTION}.corrected.nb50.h5 E23/inter_30_${RESOLUTION}.corrected.nb50.h5 --operation log2ratio -o analysis/E22-E23_log2_m50.h5
 
 #hicPlotTADs --tracks track.ini -o ${SAMPLE}_TADs_chr11_5019502-5575416_track.png --region chr11:5019502-5575416
 #hicPlotTADs --tracks track.ini -o ${SAMPLE}_TADs_chr2_60471755-61029177_track.png --region chr2:60471755-61029177
 
-#hicAdjustMatrix -m inter_30_10000.corrected.h5 --action keep --chromosomes 2 -o matrix_chr1.h5
+#hicAdjustMatrix -m inter_30_${RESOLUTION}.corrected.h5 --action keep --chromosomes 2 -o matrix_chr1.h5
 
-hicDifferentialTAD -tm UT1/inter_30_10000.corrected.h5 -cm E22/inter_30_10000.corrected.h5 -td UT1/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT1-E22 -p 0.01 -t 4 -mr all
-hicDifferentialTAD -tm UT1/inter_30_10000.corrected.h5 -cm E23/inter_30_10000.corrected.h5 -td UT1/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT1-E23 -p 0.01 -t 4 -mr all
-hicDifferentialTAD -tm UT1/inter_30_10000.corrected.h5 -cm P10/inter_30_10000.corrected.h5 -td UT1/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT1-P10 -p 0.01 -t 4 -mr all
-hicDifferentialTAD -tm UT1/inter_30_10000.corrected.h5 -cm P11/inter_30_10000.corrected.h5 -td UT1/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT1-P11 -p 0.01 -t 4 -mr all
+hicDifferentialTAD -tm UT1/inter_30_${RESOLUTION}.corrected.h5 -cm E22/inter_30_${RESOLUTION}.corrected.h5 -td UT1/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT1-E22 -p 0.01 -t 4 -mr all
+hicDifferentialTAD -tm UT1/inter_30_${RESOLUTION}.corrected.h5 -cm E23/inter_30_${RESOLUTION}.corrected.h5 -td UT1/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT1-E23 -p 0.01 -t 4 -mr all
+hicDifferentialTAD -tm UT1/inter_30_${RESOLUTION}.corrected.h5 -cm P10/inter_30_${RESOLUTION}.corrected.h5 -td UT1/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT1-P10 -p 0.01 -t 4 -mr all
+hicDifferentialTAD -tm UT1/inter_30_${RESOLUTION}.corrected.h5 -cm P11/inter_30_${RESOLUTION}.corrected.h5 -td UT1/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT1-P11 -p 0.01 -t 4 -mr all
 
-hicDifferentialTAD -tm UT2/inter_30_10000.corrected.h5 -cm E22/inter_30_10000.corrected.h5 -td UT2/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT2-E22 -p 0.01 -t 4 -mr all
-hicDifferentialTAD -tm UT2/inter_30_10000.corrected.h5 -cm E23/inter_30_10000.corrected.h5 -td UT2/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT2-E23 -p 0.01 -t 4 -mr all
-hicDifferentialTAD -tm UT2/inter_30_10000.corrected.h5 -cm P10/inter_30_10000.corrected.h5 -td UT2/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT2-P10 -p 0.01 -t 4 -mr all
-hicDifferentialTAD -tm UT2/inter_30_10000.corrected.h5 -cm P11/inter_30_10000.corrected.h5 -td UT2/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT2-P11 -p 0.01 -t 4 -mr all
+hicDifferentialTAD -tm UT2/inter_30_${RESOLUTION}.corrected.h5 -cm E22/inter_30_${RESOLUTION}.corrected.h5 -td UT2/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT2-E22 -p 0.01 -t 4 -mr all
+hicDifferentialTAD -tm UT2/inter_30_${RESOLUTION}.corrected.h5 -cm E23/inter_30_${RESOLUTION}.corrected.h5 -td UT2/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT2-E23 -p 0.01 -t 4 -mr all
+hicDifferentialTAD -tm UT2/inter_30_${RESOLUTION}.corrected.h5 -cm P10/inter_30_${RESOLUTION}.corrected.h5 -td UT2/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT2-P10 -p 0.01 -t 4 -mr all
+hicDifferentialTAD -tm UT2/inter_30_${RESOLUTION}.corrected.h5 -cm P11/inter_30_${RESOLUTION}.corrected.h5 -td UT2/tads_hic_corrected_domains.bed -o analysis/differential_tads_UT2-P11 -p 0.01 -t 4 -mr all
 
