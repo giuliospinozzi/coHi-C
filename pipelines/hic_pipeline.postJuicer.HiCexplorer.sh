@@ -78,16 +78,16 @@ for k in $(ls -d $WORKING_DIR/*/); do
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicPlotMatrix \n"
     # Edit for specific project
-    hicPlotMatrix -m inter_30_10000.corrected.h5 --clearMaskedBins --region chr2:60221755-61279177 -o ${SAMPLE}_10000_log2_chr2_60221755-61279177_matrix_plot.png --log1p
-    hicPlotMatrix -m inter_30_10000.corrected.h5 --clearMaskedBins --region chr11:4769502-5825416 -o ${SAMPLE}_10000_log2_chr11_4769502-5825416_matrix_plot.png --log1p
+    hicPlotMatrix -m inter_30_10000.corrected.h5 --clearMaskedBins --region chr2:60221755-61279177 -o ${SAMPLE}_10000_log2_chr2_60221755-61279177_matrix_plot.png --log1p --dpi 150
+    hicPlotMatrix -m inter_30_10000.corrected.h5 --clearMaskedBins --region chr11:4769502-5825416 -o ${SAMPLE}_10000_log2_chr11_4769502-5825416_matrix_plot.png --log1p --dpi 150
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicFindTADs \n"
     hicFindTADs -m inter_30_10000.corrected.h5 --outPrefix tads_hic_corrected --numberOfProcessors $MAXTHREADS --correctForMultipleTesting fdr --maxDepth 100000 --thresholdComparisons 0.05 --delta 0.01
     
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicPlotTADs \n"
     # Edit for specific project
-    hicPlotTADs --tracks track.ini -o ${SAMPLE}_TADs_chr11_5019502-5575416_track.png --region chr11:5019502-5575416
-    hicPlotTADs --tracks track.ini -o ${SAMPLE}_TADs_chr2_60471755-61029177_track.png --region chr2:60471755-61029177
+    hicPlotTADs --tracks track.ini -o ${SAMPLE}_TADs_chr11_5019502-5575416_track.png --region chr11:5019502-5575416 --dpi 150
+    hicPlotTADs --tracks track.ini -o ${SAMPLE}_TADs_chr2_60471755-61029177_track.png --region chr2:60471755-61029177 --dpi 150
 done
 
 
