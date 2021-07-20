@@ -81,7 +81,7 @@ for k in $(ls -d $WORKING_DIR/*/); do
     hicPCA -m ${RESOLUTION}_resolution/inter_30_5000_chr2-11.corrected.h5 --outputFileName ${RESOLUTION}_resolution/pca1.bw ${RESOLUTION}_resolution/pca2.bw --format bigwig
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicTransform \n"
-    hicTransform -m ${RESOLUTION}_resolution/inter_30_5000_chr2-11.corrected.h5 --outFileName ${RESOLUTION}_resolution/pearson_chr2-11.h5 --method pearson
+    hicTransform -m ${RESOLUTION}_resolution/inter_30_5000_chr2-11.corrected.h5 --outFileName ${RESOLUTION}_resolution/pearson_chr2-11.h5 --method pearson --perChromosome
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicPlotMatrix: A/B compartments can be plotted \n"
     hicPlotMatrix -m ${RESOLUTION}_resolution/pearson_chr2-11.h5 --outFileName ${RESOLUTION}_resolution/pca1.png --perChromosome --bigwig ${RESOLUTION}_resolution/pca1.bw --dpi 300
