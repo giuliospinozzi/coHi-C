@@ -77,10 +77,11 @@ for k in $(ls -d $WORKING_DIR/*/); do
     hicMergeMatrixBins -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 -o ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.nb50.h5 -nb 50
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicPCA \n" ##### Too slow!!!!
-    hicPCA -m ${RESOLUTION}_resolution/inter_30_5000.corrected.h5 --outputFileName ${RESOLUTION}_resolution/pca1.bw ${RESOLUTION}_resolution/pca2.bw --format bigwig --chromosomes 2 11
+    hicAdjustMatrix --matrix ${RESOLUTION}_resolution/inter_30_5000.corrected.h5 --outFileName ${RESOLUTION}_resolution/inter_30_5000_chr2-11.corrected.h5 --chromosomes 2 11 --action keep
+    hicPCA -m ${RESOLUTION}_resolution/inter_30_5000_chr2-11.corrected.h5 --outputFileName ${RESOLUTION}_resolution/pca1.bw ${RESOLUTION}_resolution/pca2.bw --format bigwig
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicTransform \n"
-    hicTransform -m ${RESOLUTION}_resolution/inter_30_5000.corrected.h5 --outFileName ${RESOLUTION}_resolution/pearson_chr2-11.h5 --method pearson  --chromosomes 2 11
+    hicTransform -m ${RESOLUTION}_resolution/inter_30_5000_chr2-11.corrected.h5 --outFileName ${RESOLUTION}_resolution/pearson_chr2-11.h5 --method pearson
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicPlotMatrix: A/B compartments can be plotted \n"
     hicPlotMatrix -m ${RESOLUTION}_resolution/pearson_chr2-11.h5 --outFileName ${RESOLUTION}_resolution/pca1.png --perChromosome --bigwig ${RESOLUTION}_resolution/pca1.bw --dpi 300
