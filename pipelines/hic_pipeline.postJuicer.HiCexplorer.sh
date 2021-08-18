@@ -19,7 +19,7 @@ echo "
   REQUIRED VARS and relative ORDER POSITION -> REMEMBER NO SPACES!!!!!!!!!
 	1. WORKING_DIR [/opt/ngs/results] NO / at the end !!
 	2. MAXTHREADS [12]
-  3. RESOLUTION [10000]
+    3. RESOLUTION [10000]
 
   NOTES:
   	- Input are post Juicer run
@@ -111,8 +111,7 @@ for k in $(ls -d $WORKING_DIR/*/); do
     hicPlotMatrix -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.cool -o ${RESOLUTION}_resolution/${SAMPLE}_${RESOLUTION}_chr2_60471755-61029177_matrix_loop.png --log1p --region 2:60471755-61029177 --loops ${RESOLUTION}_resolution/loops.bedgraph --dpi 300
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicPlotViewpoint \n"
-    # Edit for specific project [regions]chr1    10  30
-chr1    50  300
+    # Edit for specific project [regions]
     hicPlotViewpoint --matrix ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.cool --region 2:60471755-61029177 --referencePoint 2:60721755-60722677 -o ${RESOLUTION}_resolution/${SAMPLE}_${RESOLUTION}_chr2_60471755-61029177_matrix_ViewPoint.png --dpi 300
     hicPlotViewpoint --matrix ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.cool --region 2:60471755-61029177 --referencePoint 2:60778398-60779177 -o ${RESOLUTION}_resolution/${SAMPLE}_${RESOLUTION}_chr2_60778398-60779177_matrix_ViewPoint.png --dpi 300
     hicPlotViewpoint --matrix ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.cool --region 11:5019502-5575416 --referencePoint 11:5269502-5271087 -o ${RESOLUTION}_resolution/${SAMPLE}_${RESOLUTION}_chr11_5269502-5271087_matrix_ViewPoint.png --dpi 300
