@@ -75,7 +75,7 @@ for k in $(ls -d $WORKING_DIR/*/); do
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicCorrectMatrix \n"
     # Edit for specific project [chrs]
-    hicCorrectMatrix diagnostic_plot --matrix ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.normalized.h5 -o inter_30_${RESOLUTION}.normalized.diagnostic.png
+    hicCorrectMatrix diagnostic_plot --matrix ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.normalized.h5 -o ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.normalized.diagnostic.png
     hicCorrectMatrix correct -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.normalized.h5 -o ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 --chromosomes 2 11
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicMergeMatrixBins \n"
