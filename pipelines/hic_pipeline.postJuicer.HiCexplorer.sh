@@ -70,9 +70,13 @@ for k in $(ls -d $WORKING_DIR/*/); do
     hicConvertFormat -m inter_30.hic --inputFormat hic --outputFormat cool -o ${RESOLUTION}_resolution/inter_30.cool --resolutions ${RESOLUTION}
     hicConvertFormat -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.cool --inputFormat cool --outputFormat h5 -o ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.h5
 
+    printf "\n>>>>>>>>>> ${SAMPLE} --> hicNormalize \n"
+    hicNormalize -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.h5 -n smallest -o ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.normalized.h5
+
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicCorrectMatrix \n"
     # Edit for specific project [chrs]
-    hicCorrectMatrix correct -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.h5 --filterThreshold -1.5 5 -o ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 --chromosomes 2 11
+    hicCorrectMatrix diagnostic_plot --matrix ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.normalized.h5 -o inter_30_${RESOLUTION}.normalized.diagnostic.png
+    hicCorrectMatrix correct -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.normalized.h5 -o ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 --chromosomes 2 11
 
     printf "\n>>>>>>>>>> ${SAMPLE} --> hicMergeMatrixBins \n"
     hicMergeMatrixBins -m ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 -o ${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.nb50.h5 -nb 50
