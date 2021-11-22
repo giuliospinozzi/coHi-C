@@ -71,7 +71,7 @@ echo " i campioni untreated sono: ${untreated[@]}"
       for path_ut in $untreated; do
        ut_sample=$(grep -o '[^/]*$' <<< ${path_ut}) #salvo il nome del sample nella variabile ut_sample prendendolo dal path
       #capire in che cartella salvare questi file
-      hicDifferentialTAD -cm ${path_ut}/${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 -tm ${path_t}/${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 -td ${path_t}/${RESOLUTION}_resolution/tads_hic_corrected_domains.bed -o  ${RESOLUTION}_resolution/analysis/differential_tads_${ut_sample}-${t_sample} -p 0.01 -t 4 -mr all
+      hicDifferentialTAD -cm ${path_ut}/${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 -tm ${path_t}/${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 -td ${path_t}/${RESOLUTION}_resolution/tads_hic_corrected_domains.bed -o  ${RESOLUTION}_resolution/analysis/differential_tads_${ut_sample}-${t_sample} -p 0.01 -t 4 -mr all --threads ${MAXTHREADS}
 
       done
   done

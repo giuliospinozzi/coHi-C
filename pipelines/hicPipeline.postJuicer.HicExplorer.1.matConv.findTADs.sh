@@ -31,7 +31,7 @@ do
   printf "\n >>>>>>>>> ${arr[0]} --> hicFindTADs \n"
   hicFindTADs -m ${RESOLUTION}_resolution/${arr[3]}_${RESOLUTION}.corrected.h5 --outPrefix ${RESOLUTION}_resolution/tads_hic_corrected --numberOfProcessors ${MAXTHREADS} --correctForMultipleTesting fdr --maxDepth $((${RESOLUTION}*10)) --thresholdComparison 0.05 --delta 0.01
   printf "\n >>>>>>>>> ${arr[0]} --> hicDetectLoops \n"
-  hicDetectLoops -m ${RESOLUTION}_resolution/${arr[3]}_${RESOLUTION}.cool -o ${RESOLUTION}_resolution/loops.bedgraph --maxLoopDistance 2000000 --windowSize 10 --peakWidth 6 --pValuePreselection 0.05 --pValue 0.05
+  hicDetectLoops -m ${RESOLUTION}_resolution/${arr[3]}_${RESOLUTION}.cool -o ${RESOLUTION}_resolution/loops.bedgraph --maxLoopDistance 2000000 --windowSize 10 --peakWidth 6 --pValuePreselection 0.05 --pValue 0.05 --threads ${MAXTHREADS}
 
   printf "\n >>>>>>>>>> ${arr[0]} --> make_tracks_file \n"
   make_tracks_file --trackFiles ${RESOLUTION}_resolution/${arr[3]}_${RESOLUTION}.corrected.h5 ${RESOLUTION}_resolution/tads_hic_corrected_boundaries.bed -o tracks.ini
