@@ -20,32 +20,41 @@ do
   echo "la working directory è: ${arr[2]}/${arr[0]}"
 
    ##ciclo tra le 2 diverse regioni da plottare per lo stesso plot (colonna 5 e 6) e salvo la coordinata per intero in "coor", poi in due while separo "chr" da "start" ed "end" per poterli inserire nel nome del file output. sfrutto i cicli per scrivere una sola volta il comando hicPlotMatrix
-   printf "\n>>>>>>>>>> ${arr[0]} --> hicPlotMatrix \n" 
-   for coor_matrix in ${arr[@]:5:2};
-   do
-     while IFS=":" read -r chr start_end; do
-       while IFS="-" read -r start end; do
+   printf "\n>>>>>>>>>> ${arr[0]} --> hicPlotMatrix \n"
+   if [ ${arr[5]} !=  "None" ]; then   #not equal to
+     for coor_matrix in ${arr[@]:5:2};
+       do
+          while IFS=":" read -r chr start_end; do
+            while IFS="-" read -r start end; do
 
-     hicPlotMatrix -m ${RESOLUTION}_resolution/${arr[3]}_${RESOLUTION}.corrected.h5 --clearMaskedBins --region $coor_matrix  -o ${RESOLUTION}_resolution/${arr[3]}_${RESOLUTION}_log2_${chr}_${start}-${end}_matrix_plot.png --log1p --dpi 3000
+          echo "region-specific command for ${arr[0]}"  #region-specific command
+          hicPlotMatrix -m ${RESOLUTION}_resolution/${arr[3]}_${RESOLUTION}.corrected.h5 --clearMaskedBins --region $coor_matrix -o ${RESOLUTION}_resolution/${arr[3]}_${RESOLUTION}_log2_${chr}_${start}-${end}_matrix_plot.png --log1p --dpi 300
 
-       done <<< ${start_end}
-     done <<< ${coor_matrix}
-   done
+            done <<< ${start_end}
+           done <<< ${coor_matrix}
+          done
+   else
+	echo "genome-wide analysis"
+   fi
 
-  printf "\n>>>>>>>>>> ${arr[0]} --> hicPlotTADs and plotMatrix with Loops\n" #nello script di giulio, le stesse regioni plottate con plotTADs vengono plottate in plotMatrix con parametro --loops
+   printf "\n>>>>>>>>>> ${arr[0]} --> hicPlotTADs and plotMatrix with Loops\n" #nello script di giulio, le stesse regioni plottate con plotTADs vengono plottate in plotMatrix con parametro --loops
+   if [ ${arr[7]} !=  "None" ]; then
+       echo "region-specific command for ${arr[0]}" #region-specific commands
+       for coor_TADs in ${arr[@]:7:2};
+       do
+         echo "le coordinate intere sono: ${coor_TADs}"
+           while IFS=":" read -r chr start_end; do
+             while IFS="-" read -r start end; do
 
-    for coor_TADs in ${arr[@]:7:2};
-    do
-     echo "le coordinate intere sono: ${coor_TADs}"
-      while IFS=":" read -r chr start_end; do
-       while IFS="-" read -r start end; do 
+           hicPlotTADs --tracks tracks.ini -o ${RESOLUTION}_resolution/${arr[3]}_TADs_${chr}_${start}-${end}_track.png --region ${coor_TADs} --dpi 300
+           hicPlotMatrix -m ${RESOLUTION}_resolution/${arr[3]}_${RESOLUTION}.corrected.h5 -o ${RESOLUTION}_resolution/${arr[0]}_${RESOLUTION}_${chr}_${start}-${end}_matrix_loop.png --log1p --region ${coor_TADs} --loops ${RESOLUTION}_resolution/loops.bedgraph --dpi 300
 
-       hicPlotTADs --tracks tracks.ini -o ${RESOLUTION}_resolution/${arr[3]}_TADs_${chr}_${start}-${end}_track.png --region ${coor_TADs} --dpi 300
-       hicPlotMatrix -m ${RESOLUTION}_resolution/${arr[3]}_${RESOLUTION}.corrected.h5 -o ${RESOLUTION}_resolution/${arr[0]}_${RESOLUTION}_${chr}_${start}-${end}_matrix_loop.png --log1p --region ${coor_TADs} --loops ${RESOLUTION}_resolution/loops.bedgraph --dpi 300
-
-         done <<< ${start_end}
-        done <<< ${coor_TADs}
-  done
+             done <<< ${start_end}
+           done <<< ${coor_TADs}
+        done
+    else
+        echo "genome-wide analysis"
+    fi
 
 #salviamo i path dei campioni T nell'array "treated" e quelli dei campioni UT nell array "untreated" per l analisi differenziale successiva
 
@@ -61,7 +70,7 @@ do
    if [ "${#project_path[@]}" -lt 1 ]; then
     project_path+=(${arr[2]})
    fi
-   echo ${project_path[@]}
+
 
 
 done < <(tail -n +2 ${FILE})  #fornisco il file da leggere e dico che voglio leggere dalla linea 2 (skippo l'header)
