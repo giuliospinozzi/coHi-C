@@ -13,33 +13,33 @@ project_path=()
 while IFS=$'\t' read -r sample ID path_dir matrix_name T_UT plotMatrix_coor1 plotMatrix_coor2 plotTADs_coor1 plotTADs_coor2 CorrectMatrix_Chr  #salvo ogni valore di ogni colonna in una variabile mentre leggo tutte le ri>
 do
   arr=(${sample} ${ID} ${path_dir} ${matrix_name} ${T_UT} ${plotMatrix_coor1} ${plotMatrix_coor2} ${plotTADs_coor1} ${plotTADs_coor2} ${CorrectMatrix_Chr}) #salvo le variabili in un array per comodità
-  echo "Processing sample ${arr[0]}"
+  printf "\n #### PROCESSING SAMPLE ${arr[0]} #### \n"
   cd ${arr[2]}
   mkdir analysis  #creo una cartella in cui andranno i file rejected, accepted prodotti da hicDifferentialTADs
   cd ${arr[2]}/${arr[0]}
+  echo "path_dir: ${arr[2]}"
   echo "la working directory è: ${arr[2]}/${arr[0]}"
 
-   ##ciclo tra le 2 diverse regioni da plottare per lo stesso plot (colonna 5 e 6) e salvo la coordinata per intero in "coor", poi in due while separo "chr" da "start" ed "end" per poterli inserire nel nome del file output. sfrutto i cicli per scrivere una sola volta il comando hicPlotMatrix
+  ##ciclo tra le 2 diverse regioni da plottare per lo stesso plot (colonna 5 e 6) e salvo la coordinata per intero in "coor", poi in due while separo "chr" da "start" ed "end" per poterli inserire nel nome del file output. sfrutto i cicli per scrivere una sola volta il comando hicPlotMatrix
    printf "\n>>>>>>>>>> ${arr[0]} --> hicPlotMatrix \n"
-   if [ ${arr[5]} !=  "None" ]; then   #not equal to
-     for coor_matrix in ${arr[@]:5:2};
-       do
+   if [[ ${arr[5]} !=  "None" ]]; then   #not equal to
+     echo "Performing region-specific command for ${arr[0]}"  #region-specific command
+     for coor_matrix in ${arr[@]:5:2}; do
           while IFS=":" read -r chr start_end; do
             while IFS="-" read -r start end; do
 
-          echo "region-specific command for ${arr[0]}"  #region-specific command
           hicPlotMatrix -m ${RESOLUTION}_resolution/${arr[3]}_${RESOLUTION}.corrected.h5 --clearMaskedBins --region $coor_matrix -o ${RESOLUTION}_resolution/${arr[3]}_${RESOLUTION}_log2_${chr}_${start}-${end}_matrix_plot.png --log1p --dpi 300
 
             done <<< ${start_end}
            done <<< ${coor_matrix}
           done
    else
-	echo "genome-wide analysis"
+	echo "Performing genome-wide analysis for ${arr[0]}"
    fi
 
    printf "\n>>>>>>>>>> ${arr[0]} --> hicPlotTADs and plotMatrix with Loops\n" #nello script di giulio, le stesse regioni plottate con plotTADs vengono plottate in plotMatrix con parametro --loops
-   if [ ${arr[7]} !=  "None" ]; then
-       echo "region-specific command for ${arr[0]}" #region-specific commands
+   if [[ ${arr[7]} !=  "None" ]]; then
+       echo "Performing region-specific command for ${arr[0]}" #region-specific commands
        for coor_TADs in ${arr[@]:7:2};
        do
          echo "le coordinate intere sono: ${coor_TADs}"
@@ -53,12 +53,12 @@ do
            done <<< ${coor_TADs}
         done
     else
-        echo "genome-wide analysis"
+        echo "Performing genome-wide analysis for ${arr[0]}"
     fi
 
 #salviamo i path dei campioni T nell'array "treated" e quelli dei campioni UT nell array "untreated" per l analisi differenziale successiva
 
-   if [ ${arr[4]} = "T" ]; then
+   if [[ ${arr[4]} = "T" ]]; then
       echo "aggiungo il nome del campione all array treated"
       treated+=(${arr[0]})
    else
@@ -66,7 +66,7 @@ do
       untreated+=(${arr[0]})
    fi
 
-#salvo il path del progetto nella variabile "project_path" inizializzata all'esterno del while all inizio
+#salvo il path del progetto nella variabile "project_path" inizializzata all'esterno del while all inizio perchè mi serve in hicDifferentialTAD
    if [ "${#project_path[@]}" -lt 1 ]; then
     project_path+=(${arr[2]})
    fi
