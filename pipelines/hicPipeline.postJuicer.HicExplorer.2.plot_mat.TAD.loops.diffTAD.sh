@@ -84,8 +84,8 @@ echo " i campioni untreated sono: ${untreated[@]}"
 #però se faccio a parte ho il problema del nome del sample e del nome della matrice (inter_30)
 
   printf "\n >>>>>>>>>> hicDifferentialTAD \n"
-  for t_sample in $treated; do
-     for ut_sample in $untreated; do
+  for t_sample in ${treated[@]}; do
+     for ut_sample in ${untreated[@]}; do
 
       hicDifferentialTAD -cm ${project_path[0]}/${ut_sample}/${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 -tm ${project_path[0]}/${t_sample}/${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 -td ${project_path[0]}/${t_sample}/${RESOLUTION}_resolution/tads_hic_corrected_domains.bed -o ${project_path[0]}/analysis/differential_tads_${ut_sample}-${t_sample} -p 0.01 -t 4 -mr all --threads ${MAXTHREADS}
 
