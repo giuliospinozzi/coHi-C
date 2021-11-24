@@ -15,7 +15,7 @@ do
   arr=(${sample} ${ID} ${path_dir} ${matrix_name} ${T_UT} ${plotMatrix_coor1} ${plotMatrix_coor2} ${plotTADs_coor1} ${plotTADs_coor2} ${CorrectMatrix_Chr}) #salvo le variabili in un array per comodità
   printf "\n #### PROCESSING SAMPLE ${arr[0]} #### \n"
   cd ${arr[2]}
-  mkdir analysis  #creo una cartella in cui andranno i file rejected, accepted prodotti da hicDifferentialTADs
+  mkdir diff_TADs_analysis  #creo una cartella in cui andranno i file rejected, accepted prodotti da hicDifferentialTADs
   cd ${arr[2]}/${arr[0]}
   echo "path_dir: ${arr[2]}"
   echo "la working directory è: ${arr[2]}/${arr[0]}"
@@ -87,7 +87,7 @@ echo " i campioni untreated sono: ${untreated[@]}"
   for t_sample in ${treated[@]}; do
      for ut_sample in ${untreated[@]}; do
 
-      hicDifferentialTAD -cm ${project_path[0]}/${ut_sample}/${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 -tm ${project_path[0]}/${t_sample}/${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 -td ${project_path[0]}/${t_sample}/${RESOLUTION}_resolution/tads_hic_corrected_domains.bed -o ${project_path[0]}/analysis/differential_tads_${ut_sample}-${t_sample} -p 0.01 -t 4 -mr all --threads ${MAXTHREADS}
+      hicDifferentialTAD -cm ${project_path[0]}/${ut_sample}/${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 -tm ${project_path[0]}/${t_sample}/${RESOLUTION}_resolution/inter_30_${RESOLUTION}.corrected.h5 -td ${project_path[0]}/${t_sample}/${RESOLUTION}_resolution/tads_hic_corrected_domains.bed -o ${project_path[0]}/diff_TADs_analysis/differential_tads_${ut_sample}-${t_sample} -p 0.01 -t 4 -mr all --threads ${MAXTHREADS}
 
       done
   done
