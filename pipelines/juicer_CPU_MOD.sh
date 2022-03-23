@@ -544,11 +544,26 @@ fi
 echo -e "--- Removing fastq from topDir\n"
 rm -r ${topDir}/fastq/
 
+#Removing SAM files from "SPLITS" dir (duplicated, they are already present in "aligned" dir)
+echo -e "--- Removing .sam files from splits directory - duplicated of .sam files in aligned directory\n"
+rm ${splitdir}/*abnorm.sam
+rm ${splitdir}/*unmapped.sam
+
+### MOMENTANEO - RENAME output from directory split
+mv ${splitdir}/*_linecount.txt ${splitdir}/${sample_name}_linecount.txt
+mv ${splitdir}/*_norm.txt.res.txt ${splitdir}/${sample_name}_norm.txt.res.txt
+mv ${splitdir}/*.sort.txt ${splitdir}/${sample_name}.sort.txt  #da comprimere!!!
+mv ${splitdir}/*.sam ${splitdir}/${sample_name}.sam
+
+###
 
 ###Convert SAM to BAM - to overcome the “no SQ lines present in the header”, use -T refSeq on samtools view					
 echo -e "--- Converting .sam files in .bam files\n"
 samtools view -Sb -T ${refSeq} ${outputdir}/abnormal.sam > ${outputdir}/abnormal.bam
 samtools view -Sb -T ${refSeq} ${outputdir}/unmapped.sam > ${outputdir}/unmapped.bam
+
+samtools view -Sb -T ${refSeq} ${splitdir}/${sample_name}.sam > ${splitdir}/${sample_name}.bam    ##NEW
+
 
 ###Sorting BAM 
 echo -e "--- Sorting .bam files\n"
@@ -556,22 +571,25 @@ echo -e "--- Sorting .bam files\n"
 samtools sort -o ${outputdir}/abnormal_sort.bam ${outputdir}/abnormal.bam
 samtools sort -o ${outputdir}/unmapped_sort.bam ${outputdir}/unmapped.bam
 
+samtools sort -o ${splitdir}/${sample_name}_sort.bam ${splitdir}/${sample_name}.bam   ##NEW
 
 echo -e "--- Indexing sort.bam files\n"
 samtools index -b ${outputdir}/abnormal_sort.bam
-samtools index -b ${outputdir}/abnormal_sort.bam
+samtools index -b ${outputdir}/unmapped_sort.bam
+
+samtools index -b ${splitdir}/${sample_name}_sort.bam  ##NEW
 
 #Removing SAM files and unsorted BAM from "ALIGNED" dir 
 echo -e "--- Removing .sam files from aligned after conversion to .bam\n"
 rm ${outputdir}/*abnormal.sam
 rm ${outputdir}/*unmapped.sam
-rm ${outputdir}/abnormal.bam
 
-#Removing SAM files from "SPLITS" dir (duplicated, they are already present in "aligned" dir)
-echo -e "--- Removing .sam files from splits directory - duplicated of .sam files in aligned directory\n"
-rm ${splitdir}/*abnorm.sam
-rm ${splitdir}/*unmapped.sam
+rm ${outputdir}/abnormal.bam  ##NEW
+rm ${outputdir}/unmapped.bam  ##NEW
 
+
+rm ${splitdir}/${sample_name}.bam  ##NEW
+rm ${splitdir}/${sample_name}.sam  ##NEW
 
 
 #----    ----
