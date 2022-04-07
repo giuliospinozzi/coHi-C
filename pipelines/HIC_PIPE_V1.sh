@@ -28,7 +28,7 @@ do
 
   # -d è topDir, la directory in cui finiranno gli output. Non la specifico perchè di default è la cwd, specificata prima. -n = sample name
  bash ${juiceDir}/scripts/juicer_CPU_MOD.sh -D ${juiceDir} -p ${genomeID} -z ${genome_path} -y ${site_file} -n ${arr[0]} -u ${fastq1_dir} -v ${fastq2_dir} -t 8 
- echo ${arr}  
+   
   
 done < <(tail -n +2 ${assoc_file}) #fornisco il file da leggere e dico che voglio leggere dalla linea 2 (skippo l'header)
 

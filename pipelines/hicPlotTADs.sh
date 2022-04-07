@@ -32,13 +32,13 @@ for coor in ${arr_coor[@]}
 do
 	echo "la coordinata da plottare è:" ${coor}
 
-        while IFS=$'\t' read -r sample ID path_dir matrix_name T_UT T_Type
-	do
-	  arr=(${sample} ${ID} ${path_dir} ${matrix_name} ${T_UT} ${T_Type} } )
+    while IFS=$'\t' read -r sample ID path_dir T_UT T_Type Fastq1_Dir Fastq2_Dir
+	  do
+	  arr=(${sample} ${ID} ${path_dir} ${T_UT} ${T_Type} ${Fastq1_Dir}	${Fastq2_Dir} )
 	  printf "\n #### PROCESSING SAMPLE ${arr[0]} #### \n"
 	  cd ${arr[2]}
 	  mkdir plotTADs_${RESOLUTION}_${coor}
-	  cd ${arr[0]}/${RESOLUTION}_resolution_NORM    #da modificare se modificherò il track.ini inserendo i path assoluti alla matrice corrected.h5 e al domains.bed (automaticamente tramite lo script1)
+	  cd ${arr[0]}/${RESOLUTION}_resolution    #da modificare se modificherò il track.ini inserendo i path assoluti alla matrice corrected.h5 e al domains.bed (automaticamente tramite lo script1)
 	  echo "la working directory è:"
 	  pwd
 	  while IFS=":" read -r chr start_end; do
@@ -49,11 +49,13 @@ do
 		done <<< ${start_end}
 	  done <<< ${coor}
 
-        done < <(tail -n +2 ${FILE})
-
 cd ${execution_dir}
 echo "la current directory è:"
 pwd
+
+        done < <(tail -n +2 ${FILE})
+
+
 
 done
 
