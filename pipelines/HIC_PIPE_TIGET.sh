@@ -83,7 +83,7 @@ do
   #TADBIT 
   echo -e "--- TADBIT\n"
   #python3 tadbit_finale1.py sample_name abs_path_R1 abs_path_R2 abs_path_tadbit_results tadbit_resolution abs_path_ref_genome.gem abs_path_ref_genome.fa 
-  python3 ${scriptsDir}/scripts/tadbit_finale1.py ${arr[0]} ${fastq1_dir} ${fastq2_dir} ${arr[2]}/${arr[0]}/tadbit_results ${tadbit_resolution} ${genome_gem} ${genome_fa} ${threads}
+  python3 ${scriptsDir}/scripts/tadbit.py ${arr[0]} ${fastq1_dir} ${fastq2_dir} ${arr[2]}/${arr[0]}/tadbit_results ${tadbit_resolution} ${genome_gem} ${genome_fa} ${threads}
    
 																												    
   #JUICER  
@@ -92,7 +92,7 @@ do
   cd ${arr[2]}/${arr[0]}/juicer_results #cd alla main dir di un sample (ovvero alla directory dove salverò gli output). importante perchè "topDir" in juicer.sh di default è la cwd. Quindi topDir sarà questa directory (e varierà ad ogni iterazione, per ogni sample) 
 
   # -d è topDir, la directory in cui finiranno gli output. Non la specifico perchè di default è la cwd, specificata prima. -n = sample name
-  bash ${scriptsDir}/scripts/juicer_CPU_MOD.sh -D ${scriptsDir} -p ${genomeID} -z ${genome_fa} -y ${site_file} -n ${arr[0]} -u ${fastq1_dir} -v ${fastq2_dir} -t 8 
+  bash ${scriptsDir}/scripts/juicer.sh -D ${scriptsDir} -p ${genomeID} -z ${genome_fa} -y ${site_file} -n ${arr[0]} -u ${fastq1_dir} -v ${fastq2_dir} -t 8 
 
 done < <(tail -n +2 ${assoc_file}) #fornisco il file da leggere e dico che voglio leggere dalla linea 2 (skippo l'header)
   
