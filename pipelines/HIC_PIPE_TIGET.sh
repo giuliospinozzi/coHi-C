@@ -81,9 +81,9 @@ do
   mkdir ${arr[2]}/${arr[0]}/tadbit_results #creo la dir con gli output di tadbit per il sample in analisi
   
   #TADBIT 
-  echo -e "--- TADBIT\n"
+  #echo -e "--- TADBIT\n"
   #python3 tadbit_finale1.py sample_name abs_path_R1 abs_path_R2 abs_path_tadbit_results tadbit_resolution abs_path_ref_genome.gem abs_path_ref_genome.fa 
-  python3 ${scriptsDir}/tadbit.py ${arr[0]} ${fastq1_dir} ${fastq2_dir} ${arr[2]}/${arr[0]}/tadbit_results ${tadbit_resolution} ${genome_gem} ${genome_fa} ${threads}
+  #python3 ${scriptsDir}/tadbit.py ${arr[0]} ${fastq1_dir} ${fastq2_dir} ${arr[2]}/${arr[0]}/tadbit_results ${tadbit_resolution} ${genome_gem} ${genome_fa} ${threads}
    
 																												    
   #JUICER  
