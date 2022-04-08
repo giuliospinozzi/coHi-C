@@ -72,7 +72,7 @@ read2str="_R2"
 
 ## Default options, overridden by command line arguments
 
-# Juicer directory, contains scripts/, references/, and restriction_sites/
+# Juicer directory, contains , references/, and restriction_sites/
 # can also be set in options via -D
 juiceDir="/opt/juicer"
 # top level directory, can also be set in options
@@ -97,7 +97,7 @@ aboutHelp="* [about]: enter description of experiment, enclosed in single quotes
 stageHelp="* [stage]: must be one of \"merge\", \"dedup\", \"final\", \"postproc\", or \"early\".\n    -Use \"merge\" when alignment has finished but the merged_sort file has not\n     yet been created.\n    -Use \"dedup\" when the files have been merged into merged_sort but\n     merged_nodups has not yet been created.\n    -Use \"final\" when the reads have been deduped into merged_nodups but the\n     final stats and hic files have not yet been created.\n    -Use \"postproc\" when the hic files have been created and only\n     postprocessing feature annotation remains to be completed.\n    -Use \"early\" for an early exit, before the final creation of the stats and\n     hic files"
 pathHelp="* [chrom.sizes path]: enter path for chrom.sizes file"
 siteFileHelp="* [restriction site file]: enter path for restriction site file (locations of\n  restriction sites in genome; can be generated with the script\n  misc/generate_site_positions.py)"
-scriptDirHelp="* [Juicer scripts directory]: set the Juicer directory,\n  which should have scripts/ references/ and restriction_sites/ underneath it\n  (default ${juiceDir})"
+scriptDirHelp="* [Juicer scripts directory]: set the Juicer directory,\n  which should have  references/ and restriction_sites/ underneath it\n  (default ${juiceDir})"
 refSeqHelp="* [reference genome file]: enter path for reference sequence file, BWA index\n  files must be in same directory"
 ligationHelp="* [ligation junction]: use this string when counting ligation junctions"
 threadsHelp="* [threads]: number of threads when running BWA alignment"
@@ -364,7 +364,7 @@ echo -ne "Juicer version $juicer_version;" >> $headfile
 bwa 2>&1 | awk '$1=="Version:"{printf(" BWA %s; ", $2)}' >> $headfile 
 echo -ne "$threads threads; " >> $headfile
 java -version 2>&1 | awk 'NR==1{printf("%s; ", $0);}' >> $headfile 
-${juiceDir}/scripts/juicer_tools -V 2>&1 | awk '$1=="Juicer" && $2=="Tools"{printf("%s; ", $0);}' >> $headfile   
+${juiceDir}/juicer_tools -V 2>&1 | awk '$1=="Juicer" && $2=="Tools"{printf("%s; ", $0);}' >> $headfile   
 echo "$0 $@" >> $headfile
 
 ## ALIGN FASTQ AS SINGLE END, SORT BY READNAME, HANDLE CHIMERIC READS
@@ -480,9 +480,9 @@ then
     
     if [ "$justexact" -eq 1 ]
     then
-	awk -f ${juiceDir}/scripts/common/dups.awk -v name=${outputdir}/ -v nowobble=1 ${outputdir}/merged_sort.txt
+	awk -f ${juiceDir}/common/dups.awk -v name=${outputdir}/ -v nowobble=1 ${outputdir}/merged_sort.txt
     else
-	awk -f ${juiceDir}/scripts/common/dups.awk -v name=${outputdir}/ ${outputdir}/merged_sort.txt
+	awk -f ${juiceDir}/common/dups.awk -v name=${outputdir}/ ${outputdir}/merged_sort.txt
     fi
     # for consistency with cluster naming in split_rmdups
     mv ${outputdir}/optdups.txt ${outputdir}/opt_dups.txt 
