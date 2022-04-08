@@ -288,7 +288,7 @@ fi
 
 ## Directories to be created and regex strings for listing files
 splitdir=${topDir}"/splits"
-donesplitdir=$topDir"/done_splits"
+donesplitdir=${topDir}"/done_splits"
 fastqdir=${topDir}"/fastq/*_R*.fastq*"
 outputdir=${topDir}"/aligned"
 tmpdir=${topDir}"/HIC_tmp"
@@ -364,7 +364,7 @@ echo -ne "Juicer version $juicer_version;" >> $headfile
 bwa 2>&1 | awk '$1=="Version:"{printf(" BWA %s; ", $2)}' >> $headfile 
 echo -ne "$threads threads; " >> $headfile
 java -version 2>&1 | awk 'NR==1{printf("%s; ", $0);}' >> $headfile 
-${juiceDir}/juicer_tools -V 2>&1 | awk '$1=="Juicer" && $2=="Tools"{printf("%s; ", $0);}' >> $headfile   
+${juiceDir}/common/juicer_tools -V 2>&1 | awk '$1=="Juicer" && $2=="Tools"{printf("%s; ", $0);}' >> $headfile   
 echo "$0 $@" >> $headfile
 
 ## ALIGN FASTQ AS SINGLE END, SORT BY READNAME, HANDLE CHIMERIC READS
