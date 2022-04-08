@@ -401,7 +401,7 @@ then
             usegzip=1
         fi
 
-	source ${juiceDir}/scripts/common/countligations.sh
+	source ${juiceDir}/common/countligations.sh
 	if [ -z "$chimeric" ]
         then
         # Align fastq pair
@@ -420,7 +420,7 @@ then
         # call chimeric_blacklist.awk to deal with chimeric reads; 
         # sorted file is sorted by read name at this point
 	touch $name${ext}_abnorm.sam $name${ext}_unmapped.sam  
-	awk -v "fname1"=$name${ext}_norm.txt -v "fname2"=$name${ext}_abnorm.sam -v "fname3"=$name${ext}_unmapped.sam -f ${juiceDir}/scripts/common/chimeric_blacklist.awk $name$ext.sam
+	awk -v "fname1"=$name${ext}_norm.txt -v "fname2"=$name${ext}_abnorm.sam -v "fname3"=$name${ext}_unmapped.sam -f ${juiceDir}/common/chimeric_blacklist.awk $name$ext.sam
 	if [ $? -ne 0 ]
 	then
             echo "***! Failure during chimera handling of $name${ext}"
@@ -430,7 +430,7 @@ then
         # and store that
 	if [ -e "$name${ext}_norm.txt" ] && [ "$site" != "none" ] && [ -e "$site_file" ]
 	then
-            ${juiceDir}/scripts/common/fragment.pl $name${ext}_norm.txt $name${ext}.frag.txt $site_file                                                                
+            ${juiceDir}/common/fragment.pl $name${ext}_norm.txt $name${ext}.frag.txt $site_file                                                                
 	elif [ "$site" == "none" ] || [ "$nofrag" -eq 1 ] 
 	then
             awk '{printf("%s %s %s %d %s %s %s %d", $1, $2, $3, 0, $4, $5, $6, 1); for (i=7; i<=NF; i++) {printf(" %s",$i);}printf("\n");}' $name${ext}_norm.txt > $name${ext}.frag.txt
@@ -495,15 +495,15 @@ then
     export _JAVA_OPTIONS=-Xmx16384m
     export LC_ALL=en_US.UTF-8 
     tail -n1 $headfile | awk '{printf"%-1000s\n", $0}' > $outputdir/inter.txt;
-    cat $splitdir/*.res.txt | awk -f ${juiceDir}/scripts/common/stats_sub.awk >> $outputdir/inter.txt
-    ${juiceDir}/scripts/common/juicer_tools LibraryComplexity $outputdir inter.txt >> $outputdir/inter.txt
+    cat $splitdir/*.res.txt | awk -f ${juiceDir}/common/stats_sub.awk >> $outputdir/inter.txt
+    ${juiceDir}/common/juicer_tools LibraryComplexity $outputdir inter.txt >> $outputdir/inter.txt
     cp $outputdir/inter.txt $outputdir/inter_30.txt 
-    ${juiceDir}/scripts/common/statistics.pl -s $site_file -l $ligation -o $outputdir/inter.txt -q 1 $outputdir/merged_nodups.txt 
+    ${juiceDir}/common/statistics.pl -s $site_file -l $ligation -o $outputdir/inter.txt -q 1 $outputdir/merged_nodups.txt 
     cat $splitdir/*_abnorm.sam > $outputdir/abnormal.sam
     cat $splitdir/*_unmapped.sam > $outputdir/unmapped.sam
-    awk -f ${juiceDir}/scripts/common/collisions.awk $outputdir/abnormal.sam > $outputdir/collisions.txt 
+    awk -f ${juiceDir}/common/collisions.awk $outputdir/abnormal.sam > $outputdir/collisions.txt 
     # Collisions dedupping: two pass algorithm, ideally would make one pass
-    gawk -v fname=$outputdir/collisions.txt -f ${juiceDir}/scripts/common/collisions_dedup_rearrange_cols.awk $outputdir/collisions.txt | sort -T $tmpdir -k3,3n -k4,4n -k10,10n -k11,11n -k17,17n -k18,18n -k24,24n -k25,25n -k31,31n -k32,32n | awk -v name=$outputdir/ -f ${juiceDir}/scripts/common/collisions_dups.awk
+    gawk -v fname=$outputdir/collisions.txt -f ${juiceDir}/common/collisions_dedup_rearrange_cols.awk $outputdir/collisions.txt | sort -T $tmpdir -k3,3n -k4,4n -k10,10n -k11,11n -k17,17n -k18,18n -k24,24n -k25,25n -k31,31n -k32,32n | awk -v name=$outputdir/ -f ${juiceDir}/common/collisions_dups.awk
 fi
 
 if [ -z "$genomePath" ]
@@ -521,20 +521,20 @@ then
     then        
         if [ "$nofrag" -eq 1 ]
         then 
-            ${juiceDir}/scripts/common/juicer_tools pre -s $outputdir/inter.txt -g $outputdir/inter_hists.m -q 1 $outputdir/merged_nodups.txt $outputdir/inter.hic $genomePath
+            ${juiceDir}/common/juicer_tools pre -s $outputdir/inter.txt -g $outputdir/inter_hists.m -q 1 $outputdir/merged_nodups.txt $outputdir/inter.hic $genomePath
         else 
-            ${juiceDir}/scripts/common/juicer_tools pre -f $site_file -s $outputdir/inter.txt -g $outputdir/inter_hists.m -q 1 $outputdir/merged_nodups.txt $outputdir/inter.hic $genomePath 
+            ${juiceDir}/common/juicer_tools pre -f $site_file -s $outputdir/inter.txt -g $outputdir/inter_hists.m -q 1 $outputdir/merged_nodups.txt $outputdir/inter.hic $genomePath 
         fi 
-        ${juiceDir}/scripts/common/statistics.pl -s $site_file -l $ligation -o $outputdir/inter_30.txt -q 30 $outputdir/merged_nodups.txt
+        ${juiceDir}/common/statistics.pl -s $site_file -l $ligation -o $outputdir/inter_30.txt -q 30 $outputdir/merged_nodups.txt
         if [ "$nofrag" -eq 1 ]
         then 
-            ${juiceDir}/scripts/common/juicer_tools pre -s $outputdir/inter_30.txt -g $outputdir/inter_30_hists.m -q 30 $outputdir/merged_nodups.txt $outputdir/inter_30.hic $genomePath 
+            ${juiceDir}/common/juicer_tools pre -s $outputdir/inter_30.txt -g $outputdir/inter_30_hists.m -q 30 $outputdir/merged_nodups.txt $outputdir/inter_30.hic $genomePath 
         else 
-            ${juiceDir}/scripts/common/juicer_tools pre -f $site_file -s $outputdir/inter_30.txt -g $outputdir/inter_30_hists.m -q 30 $outputdir/merged_nodups.txt $outputdir/inter_30.hic $genomePath
+            ${juiceDir}/common/juicer_tools pre -f $site_file -s $outputdir/inter_30.txt -g $outputdir/inter_30_hists.m -q 30 $outputdir/merged_nodups.txt $outputdir/inter_30.hic $genomePath
         fi
     fi
     # POSTPROCESSING
-    ${juiceDir}/scripts/common/juicer_postprocessing.sh -j ${juiceDir}/scripts/common/juicer_tools -i ${outputdir}/inter_30.hic -m ${juiceDir}/references/motif -g ${genomeID}
+    ${juiceDir}/common/juicer_postprocessing.sh -j ${juiceDir}/common/juicer_tools -i ${outputdir}/inter_30.hic -m ${juiceDir}/references/motif -g ${genomeID}
 fi
 
 
@@ -599,7 +599,7 @@ rm ${splitdir}/${sample_name}.sam  ##NEW
 #CHECK THAT PIPELINE WAS SUCCESSFUL
 export early=$earlyexit
 export splitdir=$splitdir
-source ${juiceDir}/scripts/common/check.sh
+source ${juiceDir}/common/check.sh
 
 
 
