@@ -1,3 +1,5 @@
+#TODO - fornire in input anche l'enzima di restrizione (variabile "enzymes")
+
 #argomenti da fornire in input:
 #1) sample name
 #2) path assoluto r1
@@ -18,6 +20,7 @@ import sys
 #import re
 #from re import search
 
+from pytadbit.utils.fastq_utils import quality_plot
 from pytadbit.parsers.genome_parser import parse_fasta
 from pytadbit.parsers.map_parser import parse_map
 from pytadbit.mapping import get_intersection
@@ -42,14 +45,16 @@ resolution = int(sys.argv[5])  #1000000   #ciò che do in input come argomento �
 res = str(resolution)
 genome_gem = sys.argv[6]
 genome = sys.argv[7]
+threads = sys.argv[8]
 
 #salvo nelle variabili i path delle directory dove verranno salvati gli output di tadbit
 mapped_reads_path = os.path.join(out_dir, 'mapped_reads')					#dir in cui salverà i file full e frag prodotti dal mapping con gem
 uniquely_mapped_reads_path = os.path.join(out_dir, 'uniquely_mapped_reads') #dir in cui salverà le uniquely mapped reads estratte con "parse_map" e poi il file .tsv con le suddette mergiate da get_intersection
-plots_path = os.path.join(out_dir, 'plots')									#dir in cui salverà tutti i plot
+plots_path = os.path.join(out_dir, 'qc_hic_experiment_plots')				#dir in cui salverà tutti i plot specifici di tadbit sul qc di un hic experiment
+fastq_quality_plots_path = os.path.join(out_dir, 'fastq_quality_plots')		#dir in cui salverò i plot sulla qualità dei fastq				
 
 #Crea le suddette cartelle se non sono già state create.
-new_dirs = [mapped_reads_path, uniquely_mapped_reads_path, plots_path]
+new_dirs = [mapped_reads_path, uniquely_mapped_reads_path, plots_path, fastq_quality_plots_path]
 
 for d in new_dirs:
 	isExist = os.path.exists(d) # Check whether the specified path exists or not
@@ -63,12 +68,18 @@ for d in new_dirs:
 enzymes = ['DpnII']
 
 
+#Tadbit reads fastq quality plot
+print("--- 	fastq quality plots "\n")
+quality_plot(r1_path, r_enz=enzymes, nreads=1000000, savefig=fastq_quality_plots_path+'/'+sample+'_R1.png')
+quality_plot(r2_path, r_enz=enzymes, nreads=1000000, savefig=fastq_quality_plots_path+'/'+sample+'_R2.png')
+
+
 #### 1) MAP of fastq reads on the reference genome ####
 
-print("mapping reads of sample:", sample, "on the reference genome", "\n")
+print("--- 	Mapping reads of sample:", sample, "on the reference genome", "\n")
 #le variabili "mapped_r1" e "mapped_r2" sono delle liste contenenti i path assoluti dei file frag e full, rispettivamente per R1 ed R2
-mapped_r1 = full_mapping(mapper_index_path=genome_gem, fastq_path=r1_path,  out_map_dir=mapped_reads_path, windows=(1, 151), r_enz=enzymes, frag_map=True, nthreads=8, clean=True, temp_dir=out_dir+'/temp_r1')
-mapped_r2 = full_mapping(mapper_index_path=genome_gem, fastq_path=r2_path,  out_map_dir=mapped_reads_path, windows=(1, 151), r_enz=enzymes, frag_map=True, nthreads=8, clean=True, temp_dir=out_dir+'/temp_r2')
+mapped_r1 = full_mapping(mapper_index_path=genome_gem, fastq_path=r1_path,  out_map_dir=mapped_reads_path, windows=(1, 151), r_enz=enzymes, frag_map=True, nthreads=threads, clean=True, temp_dir=out_dir+'/temp_r1')
+mapped_r2 = full_mapping(mapper_index_path=genome_gem, fastq_path=r2_path,  out_map_dir=mapped_reads_path, windows=(1, 151), r_enz=enzymes, frag_map=True, nthreads=threads, clean=True, temp_dir=out_dir+'/temp_r2')
 
 
 #### 2) PARSE - extraction of uniquely mapped reads + 3) Merge files R1 and R2 with uniquely mapped reads in one unique file - reads found in both files are merged ####
@@ -85,28 +96,28 @@ get_intersection(reads1, reads2, merged_reads, verbose=True)
 
 #### 4) Quality check of the Hi-C experiment ####
 # - plot_distance_vs_interactions - andamento delle interazioni tra due regioni genomiche in base alla loro distanza (non escono i numeri che si vedono sul tutorial)
-print("plotting distance vs interactions", "\n")
+print("--- Plotting distance vs interactions", "\n")
 ddi = plot_distance_vs_interactions(merged_reads, resolution=100, max_diff=1000, show=True, savefig=plots_path+'/'+sample+'_plot_distance_vs_interactions.png')  #parametri di default
 
     
 # - plot genomic distribution - n° of reads per bin (coverage)
-print("plotting genomic distribution - n° of reads per bin", "\n")
+print("--- Plotting genomic distribution - n° of reads per bin", "\n")
 plot_genomic_distribution(merged_reads, resolution=100, ylim=None, show=True, savefig=plots_path+'/'+sample+'_plot_genomic_distribution.png') #nel tutorial era resolution=500000, ylim=(0, 100000)
 #plt.tight_layout() #non funziona se non inserisco anche la parte del "decay by cromosome"
     
 # - plot hic map
-print("plotting hic map", "\n")
+print("--- Plotting hic map", "\n")
 hic_map(merged_reads, resolution=resolution, show=True, cmap='viridis', savefig=plots_path+'/'+sample+'_hic_map_res_'+res+'.png')  #resolution = 1000000
 	
 #TROVARE IL N° DI READS DA MAPPED_READS, PER SAMPLE
 #nreads=$((`zcat ${R1_FASTQ} | wc -l`/4)) ;
 	
 #From the reads that are mapped in a single RE fragment (dangling-end reads) we can infer the average insert size:
-print("plotting distirbution of dangling ends length", "\n")
+print("--- Plotting distirbution of dangling ends length", "\n")
 sizes = insert_sizes(merged_reads, show=True, nreads=None, savefig=plots_path+'/'+sample+'_distribution_of_dangling_ends_lengths.png')  #il n° di reads dovrebbe essere contenuto nel file "reads12.tsv" (ora da me chiamato "merged_reads") (prima usato 417838) il plot viene tuttavia viene identico sia con none che con quel valore. come fa la funzione ad identificare solo le dangling?)
 
 #This function separates each read-end pair into 4 categories depending of the orientation of the strand in which each maps.
-print("plotting strand bias by distance", "\n")
+print("--- Plotting strand bias by distance", "\n")
 plot_strand_bias_by_distance(merged_reads, valid_pairs=False, full_step=None, nreads=None, savefig=plots_path+'/'+sample+'_plot_strand_bias_by_distance.png')
 
 #Capire quale sia la distanza minima tra le read-ends alla quale la loro distribuzione nelle 4 categorie è uniforme 
