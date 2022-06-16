@@ -8,17 +8,16 @@
 
 #site_file (option -y): il file con i restriction enzyimes sites. Devo averne uno nella apposita dir "restriction_sites" nella juice_
 
-#assoc_file=$1  #file di associazione (.tsv)
-#scriptsDir=$2   #path alla directory contenente gli script di juicer, tadbit ed hicexplorer (script.sh e dir common DEVONO essere nella stessa directory) (ex scriptsDir)
-#genomeID=$3  #es: hg19 (option -g juicer)
-#genome_fa=$4 #path al file .fa del genoma di riferimento (option -z juicer) (/opt/genome/human/hg19/index/hg19.fa)
-#site_file=$5  #path al restriction site file 
+assoc_file=$1  #file di associazione (.tsv)
+scriptsDir=$2   #path alla directory contenente gli script di juicer, tadbit ed hicexplorer (script.sh e dir common DEVONO essere nella stessa directory) (ex scriptsDir)
+genomeID=$3  #es: hg19 (option -g juicer)
+genome_fa=$4 #path al file .fa del genoma di riferimento (option -z juicer) (/opt/genome/human/hg19/index/hg19.fa)
+site_file=$5  #path al restriction site file 
 
-#threads=$6 #num of threads (option -t juicer)
-#tadbit_resolution=$7  #tadbit resolution at the moment (17.03.2022) is 1000000
-#genome_gem=$8  #abs_path ref genome .gem (/opt/genome/human/hg19/index/gem/hg19.gem)
-#hicexplorer_resolution=$9   #sottoforma di lista di valori divisi da virgola, o di singolo valore. Es: 5000,10000,25000
-
+threads=$6 #num of threads (option -t juicer)
+tadbit_resolution=$7  #tadbit resolution at the moment (17.03.2022) is 1000000
+genome_gem=$8  #abs_path ref genome .gem (/opt/genome/human/hg19/index/gem/hg19.gem)
+hicexplorer_resolution=$9   #sottoforma di lista di valori divisi da virgola, o di singolo valore. Es: 5000,10000,25000
 
 ### NEW ### Introducing OPTARG instead of constant input from command line
 
@@ -87,24 +86,27 @@ do
   fastqc ${fastq1} ${fastq2} -o ${arr[2]}/${arr[0]}/fastqc_results
   
   #TADBIT 
-  #echo -e "--- TADBIT\n"
+  echo -e "--- TADBIT\n"
   #spiegazione: python3 tadbit_finale1.py sample_name abs_path_R1 abs_path_R2 abs_path_tadbit_results tadbit_resolution abs_path_ref_genome.gem abs_path_ref_genome.fa 
   python3 ${scriptsDir}/scripts/tadbit.py ${arr[0]} ${fastq1} ${fastq2} ${arr[2]}/${arr[0]}/tadbit_results ${tadbit_resolution} ${genome_gem} ${genome_fa} ${threads}
    
 																												    
-  #JUICER  
+  #JUICER
   echo -e "--- JUICER ${arr[0]}\n"
   mkdir ${arr[2]}/${arr[0]}/juicer_results #creo la dir dove salverò gli output di juicer, specifica di un sample
+  mkdir ${arr[2]}/${arr[0]}/straw_results
   cd ${arr[2]}/${arr[0]}/juicer_results #cd alla main dir di un sample (ovvero alla directory dove salverò gli output). importante perchè "topDir" in juicer.sh di default è la cwd. Quindi topDir sarà questa directory (e varierà ad ogni iterazione, per ogni sample) 
 
   # -d è topDir, la directory in cui finiranno gli output. Non la specifico perchè di default è la cwd, specificata prima. -n = sample name
   bash ${scriptsDir}/scripts/juicer.sh -D ${scriptsDir} -p ${genomeID} -z ${genome_fa} -y ${site_file} -n ${arr[0]} -u ${fastq1} -v ${fastq2} -t 8 
 
+  
+
 done < <(tail -n +2 ${assoc_file}) #fornisco il file da leggere e dico che voglio leggere dalla linea 2 (skippo l'header)
   
 #HICEXPLORER & HICREP - devo runnarlo al di fuori del loop precedente perchè questo script è fatto per funzionare da solo, al suo interno si looppa a sua volta, quindi
 #non ha senso loopare uno script che loopa tra samples. Creerei due loop uno dentro l'altro, che in questo caso è un errore.
-echo -e "--- HICEXPLORER & HICREP\n"
+echo -e "--- STRAW, HICEXPLORER & HICREP\n"
 
 #eseguo hicexplorer (inclusa analisi tad differenziali) ed hicrep una volta per ogni risoluzione desiderata. Ad es, risoluzione 5000, 10000 ecc.
 res_arr=() 
@@ -116,6 +118,10 @@ for (( i=0; i<=${arr_len}-1; i++ ))    #faccio -1 perchè arr_len è il numero d
 do
 echo -e "--- Executing hicexplorer with resolution ${res_arr[i]}"
 bash ${scriptsDir}/scripts/hicexplorer_hicrep.sh ${assoc_file} ${res_arr[i]} ${threads}
+
+#STRAW - eseguito per ogni risoluzione indicata nel vettore "hicexplorer_resolution"
+echo -e "--- STRAW\n"
+python3 straw.py ${arr[2]}/${arr[0]}/juicer_results/aligned/inter_30.hic ${res_arr[i]} ${arr[2]}/${arr[0]}/straw_results
 
 done
 
