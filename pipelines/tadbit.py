@@ -74,7 +74,7 @@ quality_plot(r1_path, r_enz=enzymes, nreads=1000000, savefig=fastq_quality_plots
 quality_plot(r2_path, r_enz=enzymes, nreads=1000000, savefig=fastq_quality_plots_path+'/'+sample+'_R2.png')
 
 
-#### 1) MAP of fastq reads on the reference genome ####
+#### 1) MAP of fastq reads on the reference genome #### -- PROVARE con frag_map=False (ovvero effettuando un iterative mapping e non un fragmented mapping, per vedere cosa cambia)
 
 print("--- 	Mapping reads of sample:", sample, "on the reference genome", "\n")
 #le variabili "mapped_r1" e "mapped_r2" sono delle liste contenenti i path assoluti dei file frag e full, rispettivamente per R1 ed R2
