@@ -121,7 +121,7 @@ bash ${scriptsDir}/scripts/hicexplorer_hicrep.sh ${assoc_file} ${res_arr[i]} ${t
 
 #STRAW - eseguito per ogni risoluzione indicata nel vettore "hicexplorer_resolution"
 echo -e "--- STRAW\n"
-python3 straw.py ${arr[2]}/${arr[0]}/juicer_results/aligned/inter_30.hic ${res_arr[i]} ${arr[2]}/${arr[0]}/straw_results
+python3 ${scriptsDir}/straw.py ${arr[2]}/${arr[0]}/juicer_results/aligned/inter_30.hic ${res_arr[i]} ${arr[2]}/${arr[0]}/straw_results
 
 done
 
