@@ -69,7 +69,7 @@ enzymes = ['DpnII']
 
 
 #Tadbit reads fastq quality plot
-print("--- 	fastq quality plots "\n")
+print("--- 	fastq quality plots", "\n")
 quality_plot(r1_path, r_enz=enzymes, nreads=1000000, savefig=fastq_quality_plots_path+'/'+sample+'_R1.png')
 quality_plot(r2_path, r_enz=enzymes, nreads=1000000, savefig=fastq_quality_plots_path+'/'+sample+'_R2.png')
 
