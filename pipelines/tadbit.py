@@ -46,6 +46,7 @@ res = str(resolution)
 genome_gem = sys.argv[6]
 genome = sys.argv[7]
 threads = sys.argv[8]
+is_shallow = sys.argv[9] #check if samples are shallow or not. Se non lo sono, allora facciamo solo il quality plot, altrimenti eseguiamo tadbit per intero. Motivo: tadbit è troppo oneroso da eseguire su fastq enormi, non shallow.
 
 #salvo nelle variabili i path delle directory dove verranno salvati gli output di tadbit
 mapped_reads_path = os.path.join(out_dir, 'mapped_reads')					#dir in cui salverà i file full e frag prodotti dal mapping con gem
@@ -74,58 +75,62 @@ quality_plot(r1_path, r_enz=enzymes, nreads=1000000, savefig=fastq_quality_plots
 quality_plot(r2_path, r_enz=enzymes, nreads=1000000, savefig=fastq_quality_plots_path+'/'+sample+'_R2.png')
 
 
-#### 1) MAP of fastq reads on the reference genome #### -- PROVARE con frag_map=False (ovvero effettuando un iterative mapping e non un fragmented mapping, per vedere cosa cambia)
+if is_shallow = "true":
+	print("Executing all tadbit pipeline on shallow sequences")
+	#### 1) MAP of fastq reads on the reference genome #### -- PROVARE con frag_map=False (ovvero effettuando un iterative mapping e non un fragmented mapping, per vedere cosa cambia)
 
-print("--- 	Mapping reads of sample:", sample, "on the reference genome", "\n")
-#le variabili "mapped_r1" e "mapped_r2" sono delle liste contenenti i path assoluti dei file frag e full, rispettivamente per R1 ed R2
-mapped_r1 = full_mapping(mapper_index_path=genome_gem, fastq_path=r1_path,  out_map_dir=mapped_reads_path, windows=(1, 151), r_enz=enzymes, frag_map=True, nthreads=threads, clean=True, temp_dir=out_dir+'/temp_r1')
-mapped_r2 = full_mapping(mapper_index_path=genome_gem, fastq_path=r2_path,  out_map_dir=mapped_reads_path, windows=(1, 151), r_enz=enzymes, frag_map=True, nthreads=threads, clean=True, temp_dir=out_dir+'/temp_r2')
-
-
-#### 2) PARSE - extraction of uniquely mapped reads + 3) Merge files R1 and R2 with uniquely mapped reads in one unique file - reads found in both files are merged ####
-
-genome_seq = parse_fasta(genome)
+	print("--- 	Mapping reads of sample:", sample, "on the reference genome", "\n")
+	#le variabili "mapped_r1" e "mapped_r2" sono delle liste contenenti i path assoluti dei file frag e full, rispettivamente per R1 ed R2
+	mapped_r1 = full_mapping(mapper_index_path=genome_gem, fastq_path=r1_path,  out_map_dir=mapped_reads_path, windows=(1, 151), r_enz=enzymes, frag_map=True, nthreads=threads, clean=True, temp_dir=out_dir+'/temp_r1')
+	mapped_r2 = full_mapping(mapper_index_path=genome_gem, fastq_path=r2_path,  out_map_dir=mapped_reads_path, windows=(1, 151), r_enz=enzymes, frag_map=True, nthreads=threads, clean=True, temp_dir=out_dir+'/temp_r2')
 
 
-reads1 = uniquely_mapped_reads_path+"/"+sample+"_R1.tsv"	       #path del file output contenente le uniquely mapped R1 del sample in questione
-reads2 = uniquely_mapped_reads_path+"/"+sample+"_R2.tsv"		   #path del file output contenente le uniquely mapped R1 del sample in questione
-parse_map(mapped_r1, mapped_r2, out_file1=reads1, out_file2=reads2, genome_seq=genome_seq, re_name='DpnII', verbose=True)
+	#### 2) PARSE - extraction of uniquely mapped reads + 3) Merge files R1 and R2 with uniquely mapped reads in one unique file - reads found in both files are merged ####
+
+	genome_seq = parse_fasta(genome)
+
+
+	reads1 = uniquely_mapped_reads_path+"/"+sample+"_R1.tsv"	       #path del file output contenente le uniquely mapped R1 del sample in questione
+	reads2 = uniquely_mapped_reads_path+"/"+sample+"_R2.tsv"		   #path del file output contenente le uniquely mapped R1 del sample in questione
+	parse_map(mapped_r1, mapped_r2, out_file1=reads1, out_file2=reads2, genome_seq=genome_seq, re_name='DpnII', verbose=True)
 	
-merged_reads = uniquely_mapped_reads_path+"/"+sample+"_merged_reads.tsv"   #path del file che conterrà le reads mergiate (ex reads12.tsv)
-get_intersection(reads1, reads2, merged_reads, verbose=True)
+	merged_reads = uniquely_mapped_reads_path+"/"+sample+"_merged_reads.tsv"   #path del file che conterrà le reads mergiate (ex reads12.tsv)
+	get_intersection(reads1, reads2, merged_reads, verbose=True)
 
-#### 4) Quality check of the Hi-C experiment ####
-# - plot_distance_vs_interactions - andamento delle interazioni tra due regioni genomiche in base alla loro distanza (non escono i numeri che si vedono sul tutorial)
-print("--- Plotting distance vs interactions", "\n")
-ddi = plot_distance_vs_interactions(merged_reads, resolution=100, max_diff=1000, show=True, savefig=plots_path+'/'+sample+'_plot_distance_vs_interactions.png')  #parametri di default
+	#### 4) Quality check of the Hi-C experiment ####
+	# - plot_distance_vs_interactions - andamento delle interazioni tra due regioni genomiche in base alla loro distanza (non escono i numeri che si vedono sul tutorial)
+	print("--- Plotting distance vs interactions", "\n")
+	ddi = plot_distance_vs_interactions(merged_reads, resolution=100, max_diff=1000, show=True, savefig=plots_path+'/'+sample+'_plot_distance_vs_interactions.png')  #parametri di default
 
     
-# - plot genomic distribution - n° of reads per bin (coverage)
-print("--- Plotting genomic distribution - n° of reads per bin", "\n")
-plot_genomic_distribution(merged_reads, resolution=100, ylim=None, show=True, savefig=plots_path+'/'+sample+'_plot_genomic_distribution.png') #nel tutorial era resolution=500000, ylim=(0, 100000)
-#plt.tight_layout() #non funziona se non inserisco anche la parte del "decay by cromosome"
+	# - plot genomic distribution - n° of reads per bin (coverage)
+	print("--- Plotting genomic distribution - n° of reads per bin", "\n")
+	plot_genomic_distribution(merged_reads, resolution=100, ylim=None, show=True, savefig=plots_path+'/'+sample+'_plot_genomic_distribution.png') #nel tutorial era resolution=500000, ylim=(0, 100000)
+	#plt.tight_layout() #non funziona se non inserisco anche la parte del "decay by cromosome"
     
-# - plot hic map
-print("--- Plotting hic map", "\n")
-hic_map(merged_reads, resolution=resolution, show=True, cmap='viridis', savefig=plots_path+'/'+sample+'_hic_map_res_'+res+'.png')  #resolution = 1000000
+	# - plot hic map
+	print("--- Plotting hic map", "\n")
+	hic_map(merged_reads, resolution=resolution, show=True, cmap='viridis', savefig=plots_path+'/'+sample+'_hic_map_res_'+res+'.png')  #resolution = 1000000
 	
-#TROVARE IL N° DI READS DA MAPPED_READS, PER SAMPLE
-#nreads=$((`zcat ${R1_FASTQ} | wc -l`/4)) ;
+	#TROVARE IL N° DI READS DA MAPPED_READS, PER SAMPLE
+	#nreads=$((`zcat ${R1_FASTQ} | wc -l`/4)) ;
 	
-#From the reads that are mapped in a single RE fragment (dangling-end reads) we can infer the average insert size:
-print("--- Plotting distirbution of dangling ends length", "\n")
-sizes = insert_sizes(merged_reads, show=True, nreads=None, savefig=plots_path+'/'+sample+'_distribution_of_dangling_ends_lengths.png')  #il n° di reads dovrebbe essere contenuto nel file "reads12.tsv" (ora da me chiamato "merged_reads") (prima usato 417838) il plot viene tuttavia viene identico sia con none che con quel valore. come fa la funzione ad identificare solo le dangling?)
+	#From the reads that are mapped in a single RE fragment (dangling-end reads) we can infer the average insert size:
+	print("--- Plotting distirbution of dangling ends length", "\n")
+	sizes = insert_sizes(merged_reads, show=True, nreads=None, savefig=plots_path+'/'+sample+'_distribution_of_dangling_ends_lengths.png')  #il n° di reads dovrebbe essere contenuto nel file "reads12.tsv" (ora da me chiamato "merged_reads") (prima usato 417838) il plot viene tuttavia viene identico sia con none che con quel valore. come fa la funzione ad identificare solo le dangling?)
 
-#This function separates each read-end pair into 4 categories depending of the orientation of the strand in which each maps.
-print("--- Plotting strand bias by distance", "\n")
-plot_strand_bias_by_distance(merged_reads, valid_pairs=False, full_step=None, nreads=None, savefig=plots_path+'/'+sample+'_plot_strand_bias_by_distance.png')
+	#This function separates each read-end pair into 4 categories depending of the orientation of the strand in which each maps.
+	print("--- Plotting strand bias by distance", "\n")
+	plot_strand_bias_by_distance(merged_reads, valid_pairs=False, full_step=None, nreads=None, savefig=plots_path+'/'+sample+'_plot_strand_bias_by_distance.png')
 
-#Capire quale sia la distanza minima tra le read-ends alla quale la loro distribuzione nelle 4 categorie è uniforme 
-plot_strand_bias_by_distance(merged_reads, nreads=None, savefig=plots_path+'/'+sample+'_plot_strand_bias_by_distance2.png')
+	#Capire quale sia la distanza minima tra le read-ends alla quale la loro distribuzione nelle 4 categorie è uniforme 
+	plot_strand_bias_by_distance(merged_reads, nreads=None, savefig=plots_path+'/'+sample+'_plot_strand_bias_by_distance2.png')
 
 
-#remove the "uniquely_mapped_reads" directory to save space (we don't need it anymore)
-os.rmdir(uniquely_mapped_reads_path)
+	#remove the "uniquely_mapped_reads" directory to save space (we don't need it anymore)
+	os.rmdir(uniquely_mapped_reads_path)
+else:
+	print("Samples are not shallow sequences. Skip tadbit")
 
 
 

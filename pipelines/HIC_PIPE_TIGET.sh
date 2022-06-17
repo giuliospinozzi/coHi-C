@@ -18,6 +18,7 @@ threads=$6 #num of threads (option -t juicer)
 tadbit_resolution=$7  #tadbit resolution at the moment (17.03.2022) is 1000000
 genome_gem=$8  #abs_path ref genome .gem (/opt/genome/human/hg19/index/gem/hg19.gem)
 hicexplorer_resolution=$9   #sottoforma di lista di valori divisi da virgola, o di singolo valore. Es: 5000,10000,25000
+is_shallow=$10 #true or false. se true, allora tadbit verrà eseguito per intero. altrimenti verrà eseguito solo il quality plot. Questo perchè è molto oneroso sui fastq enormi
 
 ### NEW ### Introducing OPTARG instead of constant input from command line
 
@@ -71,8 +72,6 @@ done
 #----------
 
 
-
-
 while IFS=$'\t' read -r sample ID path_dir T_UT T_Type fastq1 fastq2  #salvo ogni valore di ogni colonna in una variabile mentre leggo tutte le righe
 do
   arr=($sample $ID $path_dir $T_UT $T_Type $fastq1 $fastq2) #salvo le variabili in un array per comodità
@@ -82,13 +81,17 @@ do
   mkdir ${arr[2]}/${arr[0]}/tadbit_results #creo la dir con gli output di tadbit per il sample in analisi
   mkdir ${arr[2]}/${arr[0]}/fastqc_results
   
-  #FASTQC analysis on fastq reads
-  fastqc ${fastq1} ${fastq2} -o ${arr[2]}/${arr[0]}/fastqc_results
+  #ASSEMBLY-STATS
+  echo -e "--- Assembly-stats on R1 & R2 of sample ${arr[0]}\n"
+  assembly-stats <(zcat ${fastq1}) &
+  assembly-stats <(zcat ${fastq2}) &
+  wait
+
   
   #TADBIT 
   echo -e "--- TADBIT\n"
   #spiegazione: python3 tadbit_finale1.py sample_name abs_path_R1 abs_path_R2 abs_path_tadbit_results tadbit_resolution abs_path_ref_genome.gem abs_path_ref_genome.fa 
-  python3 ${scriptsDir}/scripts/tadbit.py ${arr[0]} ${fastq1} ${fastq2} ${arr[2]}/${arr[0]}/tadbit_results ${tadbit_resolution} ${genome_gem} ${genome_fa} ${threads}
+  python3 ${scriptsDir}/tadbit.py ${arr[0]} ${fastq1} ${fastq2} ${arr[2]}/${arr[0]}/tadbit_results ${tadbit_resolution} ${genome_gem} ${genome_fa} ${threads} ${is_shallow}
    
 																												    
   #JUICER
@@ -98,7 +101,7 @@ do
   cd ${arr[2]}/${arr[0]}/juicer_results #cd alla main dir di un sample (ovvero alla directory dove salverò gli output). importante perchè "topDir" in juicer.sh di default è la cwd. Quindi topDir sarà questa directory (e varierà ad ogni iterazione, per ogni sample) 
 
   # -d è topDir, la directory in cui finiranno gli output. Non la specifico perchè di default è la cwd, specificata prima. -n = sample name
-  bash ${scriptsDir}/scripts/juicer.sh -D ${scriptsDir} -p ${genomeID} -z ${genome_fa} -y ${site_file} -n ${arr[0]} -u ${fastq1} -v ${fastq2} -t 8 
+  bash ${scriptsDir}/juicer.sh -D ${scriptsDir} -p ${genomeID} -z ${genome_fa} -y ${site_file} -n ${arr[0]} -u ${fastq1} -v ${fastq2} -t 8 
 
   
 
@@ -117,7 +120,7 @@ arr_len="${#res_arr[@]}"  #lunghezza dell array 1 (che è uguale a quella dell'a
 for (( i=0; i<=${arr_len}-1; i++ ))    #faccio -1 perchè arr_len è il numero di elementi dell'array, ma gli indici iniziano da 0, quindi devo sottrarre 1 al num totale di elementi 
 do
 echo -e "--- Executing hicexplorer with resolution ${res_arr[i]}"
-bash ${scriptsDir}/scripts/hicexplorer_hicrep.sh ${assoc_file} ${res_arr[i]} ${threads}
+bash ${scriptsDir}/hicexplorer_hicrep.sh ${assoc_file} ${res_arr[i]} ${threads}
 
 #STRAW - eseguito per ogni risoluzione indicata nel vettore "hicexplorer_resolution"
 echo -e "--- STRAW\n"
