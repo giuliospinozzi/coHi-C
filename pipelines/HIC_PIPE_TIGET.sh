@@ -101,7 +101,7 @@ do
   cd ${arr[2]}/${arr[0]}/juicer_results #cd alla main dir di un sample (ovvero alla directory dove salverò gli output). importante perchè "topDir" in juicer.sh di default è la cwd. Quindi topDir sarà questa directory (e varierà ad ogni iterazione, per ogni sample) 
 
   # -d è topDir, la directory in cui finiranno gli output. Non la specifico perchè di default è la cwd, specificata prima. -n = sample name
-  bash ${scriptsDir}/juicer.sh -D ${scriptsDir} -p ${genomeID} -z ${genome_fa} -y ${site_file} -n ${arr[0]} -u ${fastq1} -v ${fastq2} -t 8 
+  bash ${scriptsDir}/juicer.sh -D ${scriptsDir} -p ${genomeID} -z ${genome_fa} -y ${site_file} -n ${arr[0]} -u ${fastq1} -v ${fastq2} -t ${threads} 
 
   
 
@@ -133,7 +133,7 @@ done
 
 ### V4 ###
 #prova di esecuzione - introduzione delle optarg, input dei files utilizzando una lettera
-#./HIC_PIPE_V4.sh -a /home/alessio/hic/complete_hic_pipe_exe/association_file2.tsv -j /home/alessio/hic/complete_hic_pipe_exe -i hg19 -f /opt/genome/human/hg19/index/hg19.fa -s /home/alessio/hic/complete_hic_pipe_exe/restriction_sites/hg19_DpnII.txt -t 12 -r 1000000 -g /opt/genome/human/hg19/index/gem/hg19.gem -R 1000000,500000
+#./HIC_PIPE_V4.sh -a /home/alessio/hic/complete_hic_pipe_exe/association_file2.tsv -j /home/alessio/hic/complete_hic_pipe_exe -i hg19 -f /opt/genome/human/hg19/index/hg19.fa -s /home/alessio/hic/complete_hic_pipe_exe/restriction_sites/hg19_DpnII.txt -t 16 -r 1000000 -g /opt/genome/human/hg19/index/gem/hg19.gem -R 1000000,500000
 
 
 
