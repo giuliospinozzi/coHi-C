@@ -21,12 +21,21 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 import sys
+import os
 
 
 
 hic_map = sys.argv[1]  #'/home/alessio/hic/hic_pipe_results/2_1_S1_L001/juicer_results/aligned/inter_30.hic'
 resolution = sys.argv[2] #1000000
 out_dir = sys.argv[3] #/home/alessio/hic/complete_hic_pipe_exe/straw
+
+#making output dir
+counts_plots = out_dir+'/'+resolution+'/counts_plots/'
+chr_counts = out_dir+'/'+resolution+'/chr_counts/'
+
+os.mkdir(counts_plots)
+os.mkdir(chr_counts)
+
 
 
 #file di prova fornito nell'usage:
@@ -76,6 +85,9 @@ def plot_hic_map(dense_matrix, maxcolor):
 #tutti gli output fino al chr6 incluso vengono prodotti, tranne SCALE del 6, sia .tsv che i plot .png
 
 #--
+
+
+
 
 #.tsv con i counts e plot della matrice con i counts dei soli singoli cromosomi interi (1, 2, 3 ecc)
 # !! ipotesi introduzione delle coordinate da input in quanto i campi chr1 e chr2 possono essere compilati anche cosi: '4:1000000:2000000', '4:1000000:2000000' !!

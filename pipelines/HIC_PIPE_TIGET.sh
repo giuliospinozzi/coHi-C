@@ -123,7 +123,7 @@ bash ${scriptsDir}/hicexplorer_hicrep.sh ${assoc_file} ${res_arr[i]} ${threads}
 
 #STRAW - eseguito per ogni risoluzione indicata nel vettore "hicexplorer_resolution"
 echo -e "--- STRAW\n"
-mkdir ${arr[2]}/${arr[0]}/straw_results/${res_arr[i]}
+mkdir -p ${arr[2]}/${arr[0]}/straw_results/${res_arr[i]}
 python3 ${scriptsDir}/straw.py ${arr[2]}/${arr[0]}/juicer_results/aligned/inter_30.hic ${res_arr[i]} ${arr[2]}/${arr[0]}/straw_results
 
 done
