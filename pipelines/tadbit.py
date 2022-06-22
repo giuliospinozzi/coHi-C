@@ -143,8 +143,11 @@ if is_shallow == "true":
 
 	#remove the "uniquely_mapped_reads" directory to save space (we don't need it anymore)
 	os.rmdir(uniquely_mapped_reads_path)
-else:
+
+elif is_shallow == "false":
 	print("Samples are not shallow sequences. Skip other tadbit steps")
+else:
+    raise Exception("Invalid \"is_shallow\" parameter. Could be \"true\" or \"false\"")
 
 
 

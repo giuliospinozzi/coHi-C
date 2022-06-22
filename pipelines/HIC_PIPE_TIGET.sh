@@ -51,7 +51,7 @@ while getopts "a:j:i:f:g:s:r:R:h:t:l:" opt; do
 	r) tadbit_resolution=$OPTARG ;;  #tadbit resolution at the moment (17.03.2022) is 1000000    
 	R) hicexplorer_resolution=$OPTARG ;;
 	t) threads=$OPTARG ;;       #num of threads (option -t juicer)
-	l) is_shallow=$OPTARG ;;    #true or false. se true, allora tadbit verrà eseguito per intero. altrimenti verrà eseguito solo il quality plot. Questo perchè è molto oneroso sui fastq enormi
+	l) is_shallow=$OPTARG ;;    #true or false. se true, allora tadbit verrà eseguito per intero. Se false, verrà eseguito solo il quality plot. Questo perchè è molto oneroso sui fastq enormi. Se non true e non false, raise error
 	h) printHelpAndExit 0;;
 	
 	[?]) printHelpAndExit 1;;
