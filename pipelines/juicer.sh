@@ -426,7 +426,13 @@ then
             echo "***! Failure during chimera handling of $name${ext}"
             exit 1
 	fi
+	
+	echo -e "--- Removing $name$ext.sam from splits dir\n"
 	rm $name$ext.sam #removing sam from split dir after creation of abnorm.sam and unmapped.sam
+	#Remove fastq copy from topDit
+	echo -e "--- Removing fastq from topDir\n"
+	rm ${topDir}/fastq/*
+	
         # if any normal reads were written, find what fragment they correspond to 
         # and store that
 	if [ -e "$name${ext}_norm.txt" ] && [ "$site" != "none" ] && [ -e "$site_file" ]
@@ -541,12 +547,6 @@ fi
 
 #---- NEW ----
 
-#Remove fastq copy from topDit
-echo -e "--- Removing fastq from topDir\n"
-rm -r ${topDir}/fastq/
-
-
-
 ###
 
 ###Convert SAM to BAM - to overcome the “no SQ lines present in the header”, use -T refSeq on samtools view					
@@ -555,6 +555,7 @@ samtools view -Sb -@ ${threads} -T ${refSeq} ${outputdir}/abnormal.sam > ${outpu
 samtools view -Sb -@ ${threads} -T ${refSeq} ${outputdir}/unmapped.sam > ${outputdir}/unmapped.bam
    
 #Samtools flagstat of abnormal and unmapped bam files   
+echo -e "--- samtools flagstat on abnormal.bam and unmapped.bam\n"
 samtools flagstat -@ ${threads} ${outputdir}/abnormal.bam -O tsv > ${outputdir}/abnormal_flagstat.txt    
 samtools flagstat -@ ${threads} ${outputdir}/unmapped.bam -O tsv > ${outputdir}/unmapped_flagstat.txt 
 
@@ -571,7 +572,7 @@ samtools index -@ ${threads} -b ${outputdir}/unmapped_sort.bam
 
  
 #Removing SAM files and unsorted BAM from "ALIGNED" dir 
-echo -e "--- Removing unsorted .bam files from aligned dir \n"
+echo -e "--- Removing unsorted .bam files from aligned dir\n"
 
 rm ${outputdir}/abnormal.bam  
 rm ${outputdir}/unmapped.bam    

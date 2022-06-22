@@ -54,16 +54,13 @@ uniquely_mapped_reads_path = os.path.join(out_dir, 'uniquely_mapped_reads') #dir
 plots_path = os.path.join(out_dir, 'qc_hic_experiment_plots')				#dir in cui salverà tutti i plot specifici di tadbit sul qc di un hic experiment
 fastq_quality_plots_path = os.path.join(out_dir, 'fastq_quality_plots')		#dir in cui salverò i plot sulla qualità dei fastq				
 
-#Crea le suddette cartelle se non sono già state create.
-new_dirs = [mapped_reads_path, uniquely_mapped_reads_path, plots_path, fastq_quality_plots_path]
-
-for d in new_dirs:
-	isExist = os.path.exists(d) # Check whether the specified path exists or not
-	if not isExist:
-		os.makedirs(d) # Create a new directory because it does not exist
-		print("The directory", d, "is created!")
-	else:
-		print("The directory", d, "already exist", "\n")
+#Crea fastq_quality_plots_path dir se non è già stata creata.
+isExist = os.path.exists(fastq_quality_plots_path) # Check whether the specified path exists or not
+if not isExist:
+	os.makedirs(fastq_quality_plots_path) # Create a new directory because it does not exist
+	print("The directory", fastq_quality_plots_path, "is created!")
+else:
+	print("The directory", fastq_quality_plots_path, "already exist", "\n")
 
 
 enzymes = ['DpnII']
@@ -77,6 +74,23 @@ quality_plot(r2_path, r_enz=enzymes, nreads=1000000, savefig=fastq_quality_plots
 
 if is_shallow == "true":
 	print("Executing all tadbit pipeline on shallow sequences")
+	
+	#Crea le suddette cartelle se non sono già state create.
+	new_dirs = [mapped_reads_path, uniquely_mapped_reads_path, plots_path]
+
+	for d in new_dirs:
+		isExist = os.path.exists(d) # Check whether the specified path exists or not
+		if not isExist:
+			os.makedirs(d) # Create a new directory because it does not exist
+			print("The directory", d, "is created!")
+		else:
+			print("The directory", d, "already exist", "\n")
+	
+	
+	
+	
+	
+	
 	#### 1) MAP of fastq reads on the reference genome #### -- PROVARE con frag_map=False (ovvero effettuando un iterative mapping e non un fragmented mapping, per vedere cosa cambia)
 
 	print("--- 	Mapping reads of sample:", sample, "on the reference genome", "\n")
@@ -130,7 +144,7 @@ if is_shallow == "true":
 	#remove the "uniquely_mapped_reads" directory to save space (we don't need it anymore)
 	os.rmdir(uniquely_mapped_reads_path)
 else:
-	print("Samples are not shallow sequences. Skip tadbit")
+	print("Samples are not shallow sequences. Skip other tadbit steps")
 
 
 

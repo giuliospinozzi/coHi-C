@@ -89,7 +89,7 @@ do
   
   #TADBIT 
   echo -e "--- TADBIT\n"
-  #spiegazione: python3 tadbit_finale1.py sample_name abs_path_R1 abs_path_R2 abs_path_tadbit_results tadbit_resolution abs_path_ref_genome.gem abs_path_ref_genome.fa 
+  #spiegazione: python3 tadbit_finale1.py sample_name abs_path_R1 abs_path_R2 abs_path_tadbit_results tadbit_resolution abs_path_ref_genome.gem abs_path_ref_genome.fa threads true/false
   python3 ${scriptsDir}/tadbit.py ${arr[0]} ${fastq1} ${fastq2} ${arr[2]}/${arr[0]}/tadbit_results ${tadbit_resolution} ${genome_gem} ${genome_fa} ${threads} ${is_shallow}
    
 																												    
@@ -123,6 +123,7 @@ bash ${scriptsDir}/hicexplorer_hicrep.sh ${assoc_file} ${res_arr[i]} ${threads}
 
 #STRAW - eseguito per ogni risoluzione indicata nel vettore "hicexplorer_resolution"
 echo -e "--- STRAW\n"
+mkdir ${arr[2]}/${arr[0]}/straw_results/${res_arr[i]}
 python3 ${scriptsDir}/straw.py ${arr[2]}/${arr[0]}/juicer_results/aligned/inter_30.hic ${res_arr[i]} ${arr[2]}/${arr[0]}/straw_results
 
 done
