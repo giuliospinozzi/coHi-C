@@ -8,17 +8,6 @@
 
 #site_file (option -y): il file con i restriction enzyimes sites. Devo averne uno nella apposita dir "restriction_sites" nella juice_
 
-assoc_file=$1  #file di associazione (.tsv)
-scriptsDir=$2   #path alla directory contenente gli script di juicer, tadbit ed hicexplorer (script.sh e dir common DEVONO essere nella stessa directory) (ex scriptsDir)
-genomeID=$3  #es: hg19 (option -g juicer)
-genome_fa=$4 #path al file .fa del genoma di riferimento (option -z juicer) (/opt/genome/human/hg19/index/hg19.fa)
-site_file=$5  #path al restriction site file 
-
-threads=$6 #num of threads (option -t juicer)
-tadbit_resolution=$7  #tadbit resolution at the moment (17.03.2022) is 1000000
-genome_gem=$8  #abs_path ref genome .gem (/opt/genome/human/hg19/index/gem/hg19.gem)
-hicexplorer_resolution=$9   #sottoforma di lista di valori divisi da virgola, o di singolo valore. Es: 5000,10000,25000
-is_shallow=${10} #true or false. se true, allora tadbit verrà eseguito per intero. altrimenti verrà eseguito solo il quality plot. Questo perchè è molto oneroso sui fastq enormi
 
 ### NEW ### Introducing OPTARG instead of constant input from command line
 
@@ -51,7 +40,7 @@ printHelpAndExit() {
 }
 
 
-while getopts "a:j:i:f:g:s:r:R:h:t:" opt; do
+while getopts "a:j:i:f:g:s:r:R:h:t:l:" opt; do
     case $opt in
 	a) assoc_file=$OPTARG ;;   #file di associazione (.tsv)
 	j) scriptsDir=$OPTARG ;;	   #path alla directory contenente gli script di juicer (script.sh e dir common DEVONO essere nella stessa directory)	(ex juiceDir)
@@ -62,6 +51,7 @@ while getopts "a:j:i:f:g:s:r:R:h:t:" opt; do
 	r) tadbit_resolution=$OPTARG ;;  #tadbit resolution at the moment (17.03.2022) is 1000000    
 	R) hicexplorer_resolution=$OPTARG ;;
 	t) threads=$OPTARG ;;       #num of threads (option -t juicer)
+	l) is_shallow=$OPTARG ;;    #true or false. se true, allora tadbit verrà eseguito per intero. altrimenti verrà eseguito solo il quality plot. Questo perchè è molto oneroso sui fastq enormi
 	h) printHelpAndExit 0;;
 	
 	[?]) printHelpAndExit 1;;
@@ -133,7 +123,7 @@ done
 
 ### V4 ###
 #prova di esecuzione - introduzione delle optarg, input dei files utilizzando una lettera
-#./HIC_PIPE_V4.sh -a /home/alessio/hic/complete_hic_pipe_exe/association_file2.tsv -j /home/alessio/hic/complete_hic_pipe_exe -i hg19 -f /opt/genome/human/hg19/index/hg19.fa -s /home/alessio/hic/complete_hic_pipe_exe/restriction_sites/hg19_DpnII.txt -t 16 -r 1000000 -g /opt/genome/human/hg19/index/gem/hg19.gem -R 1000000,500000
+#./HIC_PIPE_V4.sh -a /home/alessio/hic/complete_hic_pipe_exe/association_file2.tsv -j /home/alessio/hic/complete_hic_pipe_exe -i hg19 -f /opt/genome/human/hg19/index/hg19.fa -s /home/alessio/hic/complete_hic_pipe_exe/restriction_sites/hg19_DpnII.txt -t 16 -r 1000000 -g /opt/genome/human/hg19/index/gem/hg19.gem -R 1000000,500000 -l false
 
 
 

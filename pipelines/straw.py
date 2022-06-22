@@ -18,7 +18,6 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib import pyplot as plt
 from matplotlib import gridspec
 import matplotlib.pyplot as plt 
-import seaborn as sns
 
 import sys
 import os
