@@ -18,7 +18,7 @@ threads=$6 #num of threads (option -t juicer)
 tadbit_resolution=$7  #tadbit resolution at the moment (17.03.2022) is 1000000
 genome_gem=$8  #abs_path ref genome .gem (/opt/genome/human/hg19/index/gem/hg19.gem)
 hicexplorer_resolution=$9   #sottoforma di lista di valori divisi da virgola, o di singolo valore. Es: 5000,10000,25000
-is_shallow=$10 #true or false. se true, allora tadbit verrà eseguito per intero. altrimenti verrà eseguito solo il quality plot. Questo perchè è molto oneroso sui fastq enormi
+is_shallow=${10} #true or false. se true, allora tadbit verrà eseguito per intero. altrimenti verrà eseguito solo il quality plot. Questo perchè è molto oneroso sui fastq enormi
 
 ### NEW ### Introducing OPTARG instead of constant input from command line
 
@@ -79,7 +79,6 @@ do
   echo -e "--- Analyzing sample ${arr[0]}\n"
   mkdir ${arr[2]}/${arr[0]} #creo la dir del sample 
   mkdir ${arr[2]}/${arr[0]}/tadbit_results #creo la dir con gli output di tadbit per il sample in analisi
-  mkdir ${arr[2]}/${arr[0]}/fastqc_results
   
   #ASSEMBLY-STATS
   echo -e "--- Assembly-stats on R1 & R2 of sample ${arr[0]}\n"

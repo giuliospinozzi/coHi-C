@@ -39,12 +39,12 @@ then
             gzip $i
 	done
     fi
-    gzip aligned/merged_nodups.txt
-    gzip aligned/dups.txt
-    gzip aligned/opt_dups.txt
-    gzip aligned/abnormal.sam
-    gzip aligned/collisions.txt
-    gzip aligned/unmapped.sam
+    pigz aligned/merged_nodups.txt
+    pigz aligned/dups.txt
+    pigz aligned/opt_dups.txt
+    rm aligned/abnormal.sam
+    pigz aligned/collisions.txt
+    rm aligned/unmapped.sam
 else 
     echo "Problem: The sum of merged_nodups and the dups files is not the same size as merged_sort.txt"
     echo "Did NOT clean up";

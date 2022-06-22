@@ -426,6 +426,7 @@ then
             echo "***! Failure during chimera handling of $name${ext}"
             exit 1
 	fi
+	rm $name$ext.sam #removing sam from split dir after creation of abnorm.sam and unmapped.sam
         # if any normal reads were written, find what fragment they correspond to 
         # and store that
 	if [ -e "$name${ext}_norm.txt" ] && [ "$site" != "none" ] && [ -e "$site_file" ]
@@ -545,52 +546,38 @@ echo -e "--- Removing fastq from topDir\n"
 rm -r ${topDir}/fastq/
 
 
-#Removing SAM files from "SPLITS" dir (duplicated, they are already present in "aligned" dir)
-#echo -e "--- Removing .sam files from splits directory - duplicated of .sam files in aligned directory\n"
-#rm ${splitdir}/*abnorm.sam
-#rm ${splitdir}/*unmapped.sam
-
-### DA ELIMINARE - RENAME output from directory split
-#mv ${splitdir}/*_linecount.txt ${splitdir}/${sample_name}_linecount.txt
-#mv ${splitdir}/*_norm.txt.res.txt ${splitdir}/${sample_name}_norm.txt.res.txt
-#mv ${splitdir}/*.sort.txt ${splitdir}/${sample_name}.sort.txt  #da comprimere!!!
-#mv ${splitdir}/*.sam ${splitdir}/${sample_name}.sam
 
 ###
 
 ###Convert SAM to BAM - to overcome the “no SQ lines present in the header”, use -T refSeq on samtools view					
 echo -e "--- Converting .sam files in .bam files\n"
-samtools view -Sb -T ${refSeq} ${outputdir}/abnormal.sam > ${outputdir}/abnormal.bam
-samtools view -Sb -T ${refSeq} ${outputdir}/unmapped.sam > ${outputdir}/unmapped.bam
+samtools view -Sb -@ ${threads} -T ${refSeq} ${outputdir}/abnormal.sam > ${outputdir}/abnormal.bam
+samtools view -Sb -@ ${threads} -T ${refSeq} ${outputdir}/unmapped.sam > ${outputdir}/unmapped.bam
    
 #Samtools flagstat of abnormal and unmapped bam files   
-samtools flagstat ${outputdir}/abnormal.bam -O tsv > ${outputdir}/abnormal_flagstat.txt    
-samtools flagstat ${outputdir}/unmapped.bam -O tsv > ${outputdir}/unmapped_flagstat.txt 
+samtools flagstat -@ ${threads} ${outputdir}/abnormal.bam -O tsv > ${outputdir}/abnormal_flagstat.txt    
+samtools flagstat -@ ${threads} ${outputdir}/unmapped.bam -O tsv > ${outputdir}/unmapped_flagstat.txt 
 
    
 ###Sorting and indexing BAM 
 echo -e "--- Sorting .bam files\n"
-samtools sort -o ${outputdir}/abnormal_sort.bam ${outputdir}/abnormal.bam
-samtools sort -o ${outputdir}/unmapped_sort.bam ${outputdir}/unmapped.bam
+samtools sort -@ ${threads} -o ${outputdir}/abnormal_sort.bam ${outputdir}/abnormal.bam
+samtools sort -@ ${threads} -o ${outputdir}/unmapped_sort.bam ${outputdir}/unmapped.bam
   
 
 echo -e "--- Indexing sort.bam files\n"
-samtools index -b ${outputdir}/abnormal_sort.bam
-samtools index -b ${outputdir}/unmapped_sort.bam
+samtools index -@ ${threads} -b ${outputdir}/abnormal_sort.bam
+samtools index -@ ${threads} -b ${outputdir}/unmapped_sort.bam
 
  
 #Removing SAM files and unsorted BAM from "ALIGNED" dir 
-#echo -e "--- Removing .sam files from aligned after conversion to .bam\n"
-#rm ${outputdir}/*abnormal.sam
-#rm ${outputdir}/*unmapped.sam
+echo -e "--- Removing unsorted .bam files from aligned dir \n"
 
-#rm ${outputdir}/abnormal.bam  
-#rm ${outputdir}/unmapped.bam    
+rm ${outputdir}/abnormal.bam  
+rm ${outputdir}/unmapped.bam    
 
 
 #----    ----
-
-
 
 
 
