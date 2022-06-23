@@ -475,7 +475,7 @@ then
         exit 1
     else
         echo "(-: Finished sorting all sorted files into a single merge."
-        rm -r ${tmpdir}
+        #rm -r ${tmpdir}
     fi
 fi
 #REMOVE DUPLICATES
@@ -512,6 +512,8 @@ then
     # Collisions dedupping: two pass algorithm, ideally would make one pass
     gawk -v fname=$outputdir/collisions.txt -f ${juiceDir}/common/collisions_dedup_rearrange_cols.awk $outputdir/collisions.txt | sort -T $tmpdir -k3,3n -k4,4n -k10,10n -k11,11n -k17,17n -k18,18n -k24,24n -k25,25n -k31,31n -k32,32n | awk -v name=$outputdir/ -f ${juiceDir}/common/collisions_dups.awk
 fi
+
+rm -r ${tmpdir}
 
 if [ -z "$genomePath" ]
 then
