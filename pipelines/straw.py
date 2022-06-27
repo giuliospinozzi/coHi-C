@@ -43,8 +43,8 @@ os.mkdir(chr_counts)
 
 #HiCFile class object methods. First, we need to create the object giving the .hic matrix to the method
 hic = hicstraw.HiCFile(hic_map)
-#print(hic.getGenomeID())    #ottengo una stringa con il genome ID
-#print(hic.getResolutions()) #ottengo una lista di digits (tutte le risoluzioni contenute nel file .hic)
+print(hic.getGenomeID())    #ottengo una stringa con il genome ID
+print(hic.getResolutions()) #ottengo una lista di digits (tutte le risoluzioni contenute nel file .hic)
 
 
 #individuo quali cromosomi sono presenti nella matrice hic:
