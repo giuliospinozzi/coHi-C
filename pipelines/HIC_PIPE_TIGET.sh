@@ -15,10 +15,10 @@
 #conda activate hic
 
 ##Read arguments
-usageHelp="Usage: ${0##*/} [-a assoc_file] [-j scriptsDir] [-i genomeID] \n [-f genome_fa]  [-g genome_gem] [-s site_file] \n [-r tadbit_resolution] [-R hicexplorer_resolution] [-t threads] [-h help]"
+usageHelp="Usage: ${0##*/} [-a assoc_file] [-D scriptsDir] [-g genomeID] \n [-z genome_fa]  [-m genome_gem] [-s site] \n [-r tadbit_resolution] [-R hicexplorer_resolution] [-t threads] [-h help]"
 scriptsDirHelp="* [scriptsDir] is the absolute path of the directory containing the main script, which must be present in the same directory of "scripts" directory, in which must be hicexplorer_hicrep_TIGET.sh, tadbit_TIGET.sh, juicer_TIGET.sh and the "common" directory containing all the scripts called by juicer"
-genomeHelp="* [genomeID] must be defined in the script, e.g. \"hg19\" or \"mm10\" \n [genome_fa] is the absolute path of the .fa file of the reference genome. This file should be present in the same directory with the .fa index files. \n [genome_gem] is the absolute path to the .gem file of the reference genome"
-siteFileHelp="* [restriction site file]: enter path for restriction site file (locations of\n  restriction sites in genome; can be generated with the script\n  misc/generate_site_positions.py)"
+genomeHelp="* [genomeID] e.g. \"hg19\" or \"mm10\" \n [genome_fa] is the absolute path of the .fa file of the reference genome. This file should be present in the same directory with the .fa index files. \n [genome_gem] is the absolute path to the .gem file of the reference genome"
+siteHelp="* [restriction enzyme]: enter the name of the restriction enzyme" 
 tadbitResolutionHelp="* [tadbit_resolution] is the resolution that will be utilized by tadbit to make plots"
 hicexplorerResolutionHelp="* [hicexplorer_resolution] could be a single value or a list of value divided by a comma. hicexplorer will be executed for each sample, for each indicated resolution"
 threadsHelp="* [threads]: number of threads when running tadbit full_mapping, juicer BWA alignment, hicexplorer hicFindTADs, hicDetectLoops, hicDifferentialTAD "
@@ -29,7 +29,7 @@ printHelpAndExit() {
     echo -e "$usageHelp"
     echo -e "$scriptsDirHelp"
     echo -e "$genomeHelp"  #(description of genomeID, genome_fa e genome_gem)
-    echo -e "$siteFileHelp"
+    echo -e "$siteHelp"
 	echo -e "$tadbitResolutionHelp"
 	echo -e "$hicexplorerResolutionHelp"
     echo -e "$threadsHelp"
@@ -40,14 +40,15 @@ printHelpAndExit() {
 }
 
 
-while getopts "a:j:i:f:g:s:r:R:h:t:l:" opt; do
+while getopts "a:D:g:z:m:s:p:r:R:t:l:h:" opt; do
     case $opt in
 	a) assoc_file=$OPTARG ;;   #file di associazione (.tsv)
-	j) scriptsDir=$OPTARG ;;	   #path alla directory contenente gli script di juicer (script.sh e dir common DEVONO essere nella stessa directory)	(ex juiceDir)
-	i) genomeID=$OPTARG ;;		#es: hg19 (option -g juicer)	
-	f) genome_fa=$OPTARG ;;	#path al file .fa del genoma di riferimento (option -z juicer) (/opt/genome/human/hg19/index/hg19.fa)	 
-	g) genome_gem=$OPTARG ;;     #abs_path ref genome .gem (/opt/genome/human/hg19/index/gem/hg19.gem)
-	s) site_file=$OPTARG ;;     #path al restriction site file
+	D) scriptsDir=$OPTARG ;;	   #path alla directory contenente gli script di juicer (script.sh e dir common DEVONO essere nella stessa directory)	(ex juiceDir)
+	g) genomeID=$OPTARG ;;		#es: hg19 (option -g juicer)	
+	z) genome_fa=$OPTARG ;;	#path al file .fa del genoma di riferimento (option -z juicer) (/opt/genome/human/hg19/index/hg19.fa)	 
+	m) genome_gem=$OPTARG ;;     #abs_path ref genome .gem (/opt/genome/human/hg19/index/gem/hg19.gem)
+	s) site=$OPTARG ;;     #Restriction enzyme (es: DpnII)
+	p) genomePath=$OPTARG ;; #path to the chrom.size file
 	r) tadbit_resolution=$OPTARG ;;  #tadbit resolution at the moment (17.03.2022) is 1000000    
 	R) hicexplorer_resolution=$OPTARG ;;
 	t) threads=$OPTARG ;;       #num of threads (option -t juicer)
@@ -90,7 +91,7 @@ do
   cd ${arr[2]}/${arr[0]}/juicer_results #cd alla main dir di un sample (ovvero alla directory dove salverò gli output). importante perchè "topDir" in juicer.sh di default è la cwd. Quindi topDir sarà questa directory (e varierà ad ogni iterazione, per ogni sample) 
 
   # -d è topDir, la directory in cui finiranno gli output. Non la specifico perchè di default è la cwd, specificata prima. -n = sample name
-  bash ${scriptsDir}/juicer.sh -D ${scriptsDir} -p ${genomeID} -z ${genome_fa} -y ${site_file} -n ${arr[0]} -u ${fastq1} -v ${fastq2} -t ${threads} 
+  bash ${scriptsDir}/juicer.sh -D ${scriptsDir} -g ${genomeID} -p ${genomePath} -z ${genome_fa} -n ${arr[0]} -s ${site} -u ${fastq1} -v ${fastq2} -t ${threads} 
 
   
 
@@ -117,6 +118,10 @@ mkdir -p ${arr[2]}/${arr[0]}/straw_results/${res_arr[i]}
 python3 ${scriptsDir}/straw.py ${arr[2]}/${arr[0]}/juicer_results/aligned/inter_30.hic ${res_arr[i]} ${arr[2]}/${arr[0]}/straw_results
 
 done
+
+
+
+
 
 
 
