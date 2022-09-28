@@ -3,57 +3,52 @@
 #le colonne del file tabulato sono fisse
 #non è importante in quale cartella si runna lo script
 #a differenza dello script in cui si normalizza ogni sample da solo, qui la logica dello script è un pò diversa.
-#inoltre, le cartelle in cui salverà gli output saranno contrassegnati dal suffisso "_NORM"
 
 FILE=$1
 RESOLUTION=$2
-MAXTHREADS=$3
+R_PLOTS_SCRIPT_DIR=$3
+MAXTHREADS=$4
 
-#salvo il path in cui eseguo lo script perchè in esso è presente anche il file .tsv nei cicli while successivi sarà necessario darglielo
-#altrimenti, dato che nel primo while cambiamo cd, non riuscirà più a leggerlo.
-#execution_dir=$(pwd)
-#-echo "$execution_dir"
 
 #Arrays for Normalization of muliple samples
-types_t=()     #array che conterrà i tipi di trattamento dei sample treated (T1, T2, ecc)
+types_t=()     #initializing empty array that will contain the type of treatment of treated samples (es: T1, T2 ecc)
 num_rows_no_none=0  #inizializzo un contatore che conterà quante sono le righe del file .tsv riguardanti campioni trattamento. e quindi quanti sono i campioni trattamento, qualsiasi sia il trt.
 					#questa variabile credo non servi più a nulla. Era un'idea iniziale, non più elaborata. confermarlo con il run dello script con dati reali
 
 #Arrays for HICREP steps
-all_samples_names=()   #conterrà i nomi di tutti i samples, sia untreated che treated (ogni tipo di treatment)
-project_path=()        #conterrà il path della cartella progetto, quella che contiene tutti samples
+all_samples_names=()   #initializing an empty array that will contain all samples names, both treated and untreated ones
+project_path=()        #initializing an empty array that will contain the path of the project directory, the one with all the samples files 
 
 
 treated=()
 untreated=()
 
 
-## 1° CICLO DI LETTURA DEL FILE .TSV ##
+### 1° CYCLE OF ASSOCIATION FILE READING ###
 
 ### Leggo tutte le righe del file .tsv (una per iterazione). Se il tipo di Treatment non c'è nell array "types_t", lo aggiungo ad esso
 ### Se il tipo di trattamento è indicato come "None", allora essi sono sample "Untreated", quindi salvo  i loro nomi nell'array "untreated"
 ### Nello stesso ciclo, converto le matrici dal formato .hic a quello .cool, .h5 ed .mcool, che serviranno successivamente
 
 
-while IFS=$'\t' read -r sample ID path_dir T_UT T_Type Fastq1_Dir Fastq2_Dir  #salvo ogni valore di ogni colonna in una variabile mentre leggo tutte le righe
+while IFS=$'\t' read -r sample ID path_dir T_UT T_Type Fastq1_Dir Fastq2_Dir  #saving each values of row i in some corresponding variables
 do
-  arr=($sample $ID $path_dir $T_UT $T_Type $Fastq1_Dir $Fastq2_Dir) #salvo le variabili in un array per comodità
+  arr=($sample $ID $path_dir $T_UT $T_Type $Fastq1_Dir $Fastq2_Dir) #saving those variables in a single array 
   
- 
-  mkdir -p ${arr[2]}/${arr[0]}/hicexplorer_results/${RESOLUTION}_resolution
-  mkdir -p ${arr[2]}/hicrep_results/${RESOLUTION}_resolution
-  
-  
-  ### DA MODIFICARE: creare la cartella "diff_TADs_analysis" e poi al suo interno una cartella per ogni risoluzione. Mettere l'if per verificare che la main dir 
-  ### non esista, altrimenti mi da l'errore che la cartella esiste già
-  
-  if [ ! -e "${arr[2]}/diff_TADs_analysis_${RESOLUTION}" ]; then
-  	mkdir ${arr[2]}/diff_TADs_analysis_${RESOLUTION}
+  #checking if those directory are already present. If not, create them. 
+  if [ ! -e "${arr[2]}/${arr[0]}/hicexplorer_results/${RESOLUTION}_resolution" ]; then
+  	mkdir -p ${arr[2]}/${arr[0]}/hicexplorer_results/${RESOLUTION}_resolution
   fi
   
-  ####################
+  if [ ! -e "${arr[2]}/hicrep_results/${RESOLUTION}_resolution" ]; then
+  	mkdir -p ${arr[2]}/hicrep_results/${RESOLUTION}_resolution
+  fi
   
-  #salvo i path piu utijuicer_resultslizzati in variabili, cosi da snellire il codice
+  if [ ! -e "${arr[2]}/diff_TADs_analysis/${RESOLUTION}_resolution" ]; then
+  	mkdir -p ${arr[2]}/diff_TADs_analysis/${RESOLUTION}_resolution
+  fi
+
+  #salvo i path piu utilizzati in variabili, cosi da snellire il codice
   juicer_results_dir=${arr[2]}/${arr[0]}/juicer_results/aligned
   hicexp_outdir=${arr[2]}/${arr[0]}/hicexplorer_results/${RESOLUTION}_resolution
   hicrep_outdir=${arr[2]}/hicrep_results/${RESOLUTION}_resolution
@@ -61,7 +56,7 @@ do
 
   printf "\n Sample ${arr[0]} is TREATED with treatment ${arr[4]} \n"  #colonna "T_Type"
   if [[ ! " ${types_t[*]} " =~ " ${arr[4]} " ]]; then
-     types_t+=(${arr[4]})                                    #salvo il nome del tipo ti trattamento nell'apposito array
+     types_t+=(${arr[4]})                                    #saving treatment type name in the "types_t" array
   fi
      num_rows_no_none=$((num_rows_no_none + 1))              #incrementa il contatore ogni volta che legge una riga di un campione treated
 
@@ -78,16 +73,17 @@ echo "Samples treatments types are: ${types_t[@]}"
 
 
 
-## 2° CICLO DI LETTURA DEL FILE .TSV ##
+### 2° CYCLE OF ASSOCIATION FILE READING ###
+## For each type of treatment, for each row of association file, save the name of samples having that type of treatment in "sample_names" variable ##
+## Normalizing together .h5 matrices of samples having the same treatment type, with hicNormalize ##
 
-####Per ogni TIPO DI TRATTAMENTO precedentemente identificato nel .tsv, per ogni riga del .tsv raggruppo nella variabile "sample_names" i nomi dei sample aventi quel tipo di trattamento
-####E utilizzo i sample names per generare i comandi di hicNormalize specifici per normalizzare assieme le matrici dei sample treated  aventi lo stesso tipo di trattamento
-for t in ${types_t[@]};
+
+for t in ${types_t[@]}; #iterating for each treatment type
 do
    echo "Considering treatment $t to indicate the cycle"
-   sample_names=()                                                           #conterrà i sample names di sample trattati con uno stesso tipo di trattamento ad ogni iterazione "for t in ${types_t[@]}"
-   norm_input_trt=()						             #conterrà i path delle matrici .h5 degli specifici treated samples da normalizzare
-   norm_output_trt=()			                       	             #conterrà i path delle matrici output normalizzate " normalized.h5" degli specifici treated samples normalizzati
+   sample_names=()                                       #will contain sample names of samples having the t treatment type 
+   norm_input_trt=()						             #will contain path of .h5 matrices of sample having t treatment type 
+   norm_output_trt=()			                       	 #will contain path of normalized.h5 matrices, output of hicNormalize
    while IFS=$'\t' read -r sample ID path_dir T_UT T_Type Fastq1_Dir Fastq2_Dir
    do
       arr=($sample $ID $path_dir $T_UT $T_Type $Fastq1_Dir $Fastq2_Dir)
@@ -110,15 +106,11 @@ do
       echo ">>>>>>>>> hicNormalize - normalizing together samples treated with treatment ${t}: ${sample_names[@]} "
       hicNormalize -m $(echo "${norm_input_trt[@]}") -n smallest -o $(echo "${norm_output_trt[@]}")                                
 
-
-
-
 done
 
 
-## 3° CICLO DI LETTURA DEL FILE .TSV ##
-
-###Post NORMALIZE -> CorrectMatrix, FindTADs, DetectLoops
+### 3° CYCLE OF ASSOCIATION FILE READING ###
+## Post NORMALIZE -> CorrectMatrix, FindTADs, DetectLoops ##
 
 while IFS=$'\t' read -r sample ID path_dir T_UT T_Type Fastq1_Dir Fastq2_Dir
 do
@@ -146,8 +138,7 @@ do
      project_path+=(${arr[2]})
   fi
 
-
-#salviamo i path dei campioni T nell'array "treated" e quelli dei campioni UT nell array "untreated" per l analisi differenziale successiva
+# saving path of T samples in "treated" array and path of UT samples in "untreated" array for differential TADs analysis #
    if [[ ${arr[4]} = "T" ]]; then
       echo "Adding sample name "${arr[0]}" to treated array" 
       treated+=(${arr[0]})
@@ -160,22 +151,30 @@ do
 done < <(tail -n +2 ${FILE})
 
 
-
-
 echo "Treated samples are: ${treated[@]}"
 echo "Untreated samples are: ${untreated[@]}"
 
-# Differential TADs analysis #
-
+### Differential TADs analysis ###
   printf "\n >>>>>>>>>> hicDifferentialTAD \n"
   for t_sample in ${treated[@]}; do
      for ut_sample in ${untreated[@]}; do
 
-      hicDifferentialTAD -cm ${project_path[0]}/${ut_sample}/${RESOLUTION}_resolution_NORM/inter_30_${RESOLUTION}_corrected.h5 -tm ${project_path[0]}/${t_sample}/${RESOLUTION}_resolution_NORM/inter_30_${RESOLUTION}_corrected.h5 -td ${project_path[0]}/${t_sample}/${RESOLUTION}_resolution_NORM/tads_hic_corrected_domains.bed -o ${project_path[0]}/diff_TADs_analysis_${RESOLUTION}/differential_tads_${ut_sample}-${t_sample} -p 0.01 -t 4 -mr all --threads ${MAXTHREADS}
+      hicDifferentialTAD -cm ${project_path[0]}/${ut_sample}/${RESOLUTION}_resolution/inter_30_${RESOLUTION}_corrected.h5 -tm ${project_path[0]}/${t_sample}/${RESOLUTION}_resolution/inter_30_${RESOLUTION}_corrected.h5 -td ${project_path[0]}/${t_sample}/${RESOLUTION}_resolution/tads_hic_corrected_domains.bed -o ${project_path[0]}/diff_TADs_analysis/${RESOLUTION}_resolution/differential_tads_${ut_sample}-${t_sample} -p 0.01 -t 4 -mr all --threads ${MAXTHREADS}
 
       done
   done
 
+
+### R script that creates dataframes and barplots of number of TADs and loops per sample and of number of differential TADs per samples comparison ###
+printf "\n >>>>>>>>>> Creating dataframes and barplots of number of TADs and loops per sample and number of differential TADs per sample comparison: \n"
+
+  if [ ! -e "${project_path[0]}/stats_plots/${RESOLUTION}_resolution" ]; then
+  	mkdir -p ${project_path[0]}/stats_plots/${RESOLUTION}_resolution
+  fi
+
+#need association file, resolution used in hicexplorer and project path
+Rscript --vanilla ${R_PLOTS_SCRIPT_DIR}/TADs_loops_plots.R ${FILE} ${RESOLUTION} ${project_path[@]}
+																																																																																	
 
 
 
@@ -192,12 +191,12 @@ elif [[ ${RESOLUTION} = 10000 ]]; then
     h=20
 fi
 
-#echo "Samples to compare are: ${all_samples_names[@]}"
+echo "Samples to compare are: ${all_samples_names[@]}"
 
 for sample1 in ${all_samples_names[@]}; do
     for sample2 in ${all_samples_names[@]}; do
 
-    if [[ "${sample1}" != "${sample2}" ]]; then   #evita confronti tra lo stesso campione
+    if [[ "${sample1}" != "${sample2}" ]]; then   #avoid comparison between the same sample 
     printf "\n ------> Comparison between samples: ${sample1}-${sample2} \n"
     hicrep ${project_path[0]}/${sample1}/hicexplorer_results/${RESOLUTION}_resolution/inter_30_${RESOLUTION}.mcool ${project_path[0]}/${sample2}/hicexplorer_results/${RESOLUTION}_resolution/inter_30_${RESOLUTION}.mcool ${project_path[0]}/hicrep_results/${RESOLUTION}_resolution/hicrep_${sample1}-${sample2}_SCC1.txt  --binSize ${RESOLUTION}  --h ${h} --dBPMax 500000
     fi

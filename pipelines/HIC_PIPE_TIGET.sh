@@ -9,7 +9,6 @@
 #site_file (option -y): il file con i restriction enzyimes sites. Devo averne uno nella apposita dir "restriction_sites" nella juice_
 
 
-### NEW ### Introducing OPTARG instead of constant input from command line
 
 # Activate Anaconda Environment (HiC)
 #conda activate hic
@@ -62,14 +61,14 @@ done
 
 #----------
 
-
-while IFS=$'\t' read -r sample ID path_dir T_UT T_Type fastq1 fastq2  #salvo ogni valore di ogni colonna in una variabile mentre leggo tutte le righe
+### Assembly-stats, tadbit and juicer for each sample included in association file ###
+while IFS=$'\t' read -r sample ID path_dir T_UT T_Type fastq1 fastq2  #saving each values of row i in some corresponding variables (row i = sample i)
 do
-  arr=($sample $ID $path_dir $T_UT $T_Type $fastq1 $fastq2) #salvo le variabili in un array per comodità
+  arr=($sample $ID $path_dir $T_UT $T_Type $fastq1 $fastq2) #saving those variables in a single array 
   
   echo -e "--- Analyzing sample ${arr[0]}\n"
-  mkdir ${arr[2]}/${arr[0]} #creo la dir del sample 
-  mkdir ${arr[2]}/${arr[0]}/tadbit_results #creo la dir con gli output di tadbit per il sample in analisi
+  mkdir ${arr[2]}/${arr[0]} #creating sample dir 
+  mkdir ${arr[2]}/${arr[0]}/tadbit_results #creating dir that will contain tadbit outputs for sample i
   
   #ASSEMBLY-STATS
   echo -e "--- Assembly-stats on R1 & R2 of sample ${arr[0]}\n"
@@ -77,31 +76,28 @@ do
   assembly-stats <(zcat ${fastq2}) &
   wait
 
-  
   #TADBIT 
   echo -e "--- TADBIT\n"
   #spiegazione: python3 tadbit_finale1.py sample_name abs_path_R1 abs_path_R2 abs_path_tadbit_results tadbit_resolution abs_path_ref_genome.gem abs_path_ref_genome.fa threads true/false
   python3 ${scriptsDir}/tadbit.py ${arr[0]} ${fastq1} ${fastq2} ${arr[2]}/${arr[0]}/tadbit_results ${tadbit_resolution} ${genome_gem} ${genome_fa} ${threads} ${is_shallow}
-   
-																												    
+   																											    
   #JUICER
   echo -e "--- JUICER ${arr[0]}\n"
-  mkdir ${arr[2]}/${arr[0]}/juicer_results #creo la dir dove salverò gli output di juicer, specifica di un sample
+  mkdir ${arr[2]}/${arr[0]}/juicer_results #creating dir that will contain juicer outputs for sample i 
   mkdir ${arr[2]}/${arr[0]}/straw_results
-  cd ${arr[2]}/${arr[0]}/juicer_results #cd alla main dir di un sample (ovvero alla directory dove salverò gli output). importante perchè "topDir" in juicer.sh di default è la cwd. Quindi topDir sarà questa directory (e varierà ad ogni iterazione, per ogni sample) 
+  cd ${arr[2]}/${arr[0]}/juicer_results #setting juicer_results dir of sample i as working directory. Important because default "topDir" in juicer.sh is the cwd. So topDir will be juicer_results (and it will change at each interaction, for each sample)
 
-  # -d è topDir, la directory in cui finiranno gli output. Non la specifico perchè di default è la cwd, specificata prima. -n = sample name
+  # -d juicer arguments is "topDir". We don't specity it since, by default it is cwd. -n = sample name
   bash ${scriptsDir}/juicer.sh -D ${scriptsDir} -g ${genomeID} -p ${genomePath} -z ${genome_fa} -n ${arr[0]} -s ${site} -u ${fastq1} -v ${fastq2} -t ${threads} 
 
-  
+done < <(tail -n +2 ${assoc_file}) #providing association file and skipping header
 
-done < <(tail -n +2 ${assoc_file}) #fornisco il file da leggere e dico che voglio leggere dalla linea 2 (skippo l'header)
+
   
-#HICEXPLORER & HICREP - devo runnarlo al di fuori del loop precedente perchè questo script è fatto per funzionare da solo, al suo interno si looppa a sua volta, quindi
-#non ha senso loopare uno script che loopa tra samples. Creerei due loop uno dentro l'altro, che in questo caso è un errore.
+### HICEXPLORER & HICREP - executing outside of the previous while cycle since this script has been implemented to be executed also as stand alone. It loops on association file by itself. ###
 echo -e "--- STRAW, HICEXPLORER & HICREP\n"
 
-#eseguo hicexplorer (inclusa analisi tad differenziali) ed hicrep una volta per ogni risoluzione desiderata. Ad es, risoluzione 5000, 10000 ecc.
+# executing hicexplorer, differential TADs analysis ed hicrep for each provided resolution #
 res_arr=() 
 IFS=',' read -r -a res_arr <<< "${hicexplorer_resolution}" 
 echo "Resolutions choosed are: ${res_arr[@]}" 
@@ -110,9 +106,9 @@ arr_len="${#res_arr[@]}"  #lunghezza dell array 1 (che è uguale a quella dell'a
 for (( i=0; i<=${arr_len}-1; i++ ))    #faccio -1 perchè arr_len è il numero di elementi dell'array, ma gli indici iniziano da 0, quindi devo sottrarre 1 al num totale di elementi 
 do
 echo -e "--- Executing hicexplorer with resolution ${res_arr[i]}"
-bash ${scriptsDir}/hicexplorer_hicrep.sh ${assoc_file} ${res_arr[i]} ${threads}
+bash ${scriptsDir}/hicexplorer_hicrep.sh ${assoc_file} ${res_arr[i]} ${scriptsDir} ${threads}
 
-#STRAW - eseguito per ogni risoluzione indicata nel vettore "hicexplorer_resolution"
+# STRAW - executed for each the same array of resolution provided for hicexplorer #
 echo -e "--- STRAW\n"
 mkdir -p ${arr[2]}/${arr[0]}/straw_results/${res_arr[i]}
 python3 ${scriptsDir}/straw.py ${arr[2]}/${arr[0]}/juicer_results/aligned/inter_30.hic ${res_arr[i]} ${arr[2]}/${arr[0]}/straw_results
@@ -122,7 +118,9 @@ done
 
 
 
-
+### V4.2 ###
+#prova di esecuzione
+#./prova_HIC_PIPE_TIGET.sh -a af_prova_R_hic10.tsv -D /home/alessio/hic/complete_hic_pipe_exe -g hg19customADA -z /opt/genome/mixed/humanADA/hg19ada.fa -m /opt/genome/human/hg19/index/gem/hg19.gem -s DpnII -p /opt/genome/mixed/humanADA/hg19ada.chrom.sizes -r 1000000 -R 10000,5000 -t 12 l false
 
 
 
