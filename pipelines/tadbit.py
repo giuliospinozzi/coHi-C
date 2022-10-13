@@ -36,27 +36,16 @@ from pytadbit.mapping.analyze import plot_strand_bias_by_distance
 
 #salvo nelle variabili gli argomenti dati in input
 sample = sys.argv[1]   #dato che i nomi dei file fastq sono spesso diversi, è difficile capire come individuare il nome del sample. Per il momento propongo di darglielo direttamente in input
-print("sample is: ", sample)
 r1_path = sys.argv[2] #abs path di r1 di un sample
-print("r1_path is: ", r1_path)
 r2_path = sys.argv[3] #abs path di r2 di un sample
-print("r2_path is: ", r2_path)
 out_dir = sys.argv[4]  #directory dei results (al cui interno avrò le 3 subdirectories citate nei prerequisiti)
-print("out_dir is: ", out_dir)
 resolution = int(sys.argv[5])  #1000000   #ciò che do in input come argomento è sempre una stringa. quindi la trasformo in integer
-print("resolution is: ", resolution)
 res = str(resolution)
-print("res is: ", res)
 genome_gem = sys.argv[6]
-print("genome_gem is: ", genome_gem)
 genome = sys.argv[7]
-print("genome is: ", genome)
 enzymes = sys.argv[8]
-print("enzymes are: ", enzymes)
 threads = sys.argv[9]
-print("thrads are: ", threads)
 is_shallow = sys.argv[10] #check if samples are shallow or not. Se non lo sono, allora facciamo solo il quality plot, altrimenti eseguiamo tadbit per intero. Motivo: tadbit è troppo oneroso da eseguire su fastq enormi, non shallow.
-print("is_shallow is: ", is_shallow)
 
 #salvo nelle variabili i path delle directory dove verranno salvati gli output di tadbit
 mapped_reads_path = os.path.join(out_dir, 'mapped_reads')					#dir in cui salverà i file full e frag prodotti dal mapping con gem
