@@ -52,7 +52,7 @@ rownames(TADs_Loops_df) <- samples
 name <- paste(project_path, "/stats_plots/", resolution, "_resolution/", "TADs_Loops_df.csv", sep = "") #creating dataframe file name
 
 cat("Saving TADs and Loops dataframe as .csv file", "\n")
-write.csv(TADs_Loops_df, name, row.names = TRUE)
+write.csv(TADs_Loops_df, name, row.names = TRUE, sep = "\t")
 
 
 
@@ -158,7 +158,7 @@ cat("\n")
 name_csv <- paste(project_path, "/stats_plots/", resolution, "_resolution/", "diff_TADs_df.csv", sep = "") #name of dataframe containing number of differential TADS
 
 cat("Saving number of differential TADs dataframe as .csv file", "\n")
-write.csv(diff_TADs_df, name_csv, row.names = TRUE)
+write.csv(diff_TADs_df, name_csv, row.names = TRUE, sep = "\t")
 
 
 

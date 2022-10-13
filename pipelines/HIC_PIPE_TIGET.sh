@@ -79,7 +79,7 @@ do
   #TADBIT 
   echo -e "--- TADBIT\n"
   #spiegazione: python3 tadbit_finale1.py sample_name abs_path_R1 abs_path_R2 abs_path_tadbit_results tadbit_resolution abs_path_ref_genome.gem abs_path_ref_genome.fa threads true/false
-  python3 ${scriptsDir}/tadbit.py ${arr[0]} ${fastq1} ${fastq2} ${arr[2]}/${arr[0]}/tadbit_results ${tadbit_resolution} ${genome_gem} ${genome_fa} ${threads} ${is_shallow}
+  python3 ${scriptsDir}/tadbit.py ${arr[0]} ${fastq1} ${fastq2} ${arr[2]}/${arr[0]}/tadbit_results ${tadbit_resolution} ${genome_gem} ${genome_fa} ${site} ${threads} ${is_shallow}
    																											    
   #JUICER
   echo -e "--- JUICER ${arr[0]}\n"
@@ -114,48 +114,6 @@ mkdir -p ${arr[2]}/${arr[0]}/straw_results/${res_arr[i]}
 python3 ${scriptsDir}/straw.py ${arr[2]}/${arr[0]}/juicer_results/aligned/inter_30.hic ${res_arr[i]} ${arr[2]}/${arr[0]}/straw_results
 
 done
-
-
-
-
-### V4.2 ###
-#prova di esecuzione
-#./prova_HIC_PIPE_TIGET.sh -a af_prova_R_hic10.tsv -D /home/alessio/hic/complete_hic_pipe_exe -g hg19customADA -z /opt/genome/mixed/humanADA/hg19ada.fa -m /opt/genome/human/hg19/index/gem/hg19.gem -s DpnII -p /opt/genome/mixed/humanADA/hg19ada.chrom.sizes -r 1000000 -R 10000,5000 -t 12 l false
-
-
-
-### V4 ###
-#prova di esecuzione - introduzione delle optarg, input dei files utilizzando una lettera
-#./HIC_PIPE_V4.sh -a /home/alessio/hic/complete_hic_pipe_exe/association_file2.tsv -j /home/alessio/hic/complete_hic_pipe_exe -i hg19 -f /opt/genome/human/hg19/index/hg19.fa -s /home/alessio/hic/complete_hic_pipe_exe/restriction_sites/hg19_DpnII.txt -t 16 -r 1000000 -g /opt/genome/human/hg19/index/gem/hg19.gem -R 1000000,500000 -l false
-
-
-
-### V3 ###
-#prova di esecuzione
-#./HIC_PIPE_V3.sh /home/alessio/hic/complete_hic_pipe_exe/association_file2.tsv /home/alessio/hic/complete_hic_pipe_exe hg19 /opt/genome/human/hg19/index/hg19.fa /home/alessio/hic/complete_hic_pipe_exe/restriction_sites/hg19_DpnII.txt 12 1000000 /opt/genome/human/hg19/index/gem/hg19.gem 1000000,500000
-
-#--------------
-
-### V2 ###
-
-#prova di esecuzione
-#./HIC_PIPE_V2.sh /home/alessio/hic/complete_hic_pipe_exe/association_file2.tsv /home/alessio/hic/complete_hic_pipe_exe hg19 /opt/genome/human/hg19/index/hg19.fa /home/alessio/hic/complete_hic_pipe_exe/restriction_sites/hg19_DpnII.txt 12 1000000 /opt/genome/human/hg19/index/gem/hg19.gem
-
-
-#--------------
-#V1
-
-#comando tipo per juicer originale
-#./juicer.sh -z /opt/genome/human/hg19/index/hg19.fa -p hg19 -D /home/alessio/hic/juicer_prova
-
-
-#comando runnando juicer_CPU_MOD_OK senza lo script bash superiore
-#./juicer_CPU_MOD.sh -D /opt/applications/scripts/juicer -z /opt/genome/human/hg19/index/hg19.fa -p hg19 -t 8 -n 2_1_S1_L001 -u /home/alessio/hic/juicer_prova/fastq/2_1_S1_L001_R1_001.fastq.gz -v /home/alessio/hic/juicer_prova/fastq/2_1_S1_L001_R2_001.fastq.gz
-
-
-#comando di esempio con cui runnare questo script.
-#./HIC_PIPE_V1.sh /home/alessio/hic/juicer_prova/juicer_AF.tsv /home/alessio/hic/juicer_prova hg19 /opt/genome/human/hg19/index/hg19.fa /home/alessio/hic/juicer_prova/restriction_sites/hg19_DpnII.txt 12
-
 
 
 

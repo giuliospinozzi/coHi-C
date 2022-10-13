@@ -1,5 +1,3 @@
-#TODO - fornire in input anche l'enzima di restrizione (variabile "enzymes")
-
 #argomenti da fornire in input:
 #1) sample name
 #2) path assoluto r1
@@ -8,9 +6,9 @@
 #5) risoluzione per il plot della matrice hic in "hic_map" function
 #6) genoma index gem (hg19.gem)
 #7) genoma normale (hg19.fa)
-
-#prova d'uso: 
-#python3 tadbit_automatiz2.py 2_1_S1_L001 /mnt/externalhd2/giulio/HiC/hic13/tadbit_quality_prova/fastq/2_1_S1_L001_R1_001.fastq.gz /mnt/externalhd2/giulio/HiC/hic13/tadbit_quality_prova/fastq/2_1_S1_L001_R2_001.fastq.gz /mnt/externalhd2/giulio/HiC/hic13/tadbit_quality_prova/results 1000000 /opt/genome/human/hg19/index/gem/hg19.gem /opt/genome/human/hg19/index/hg19.fa
+#8) nome dell'enzima di restrizione usato nell'esperimento hic (es: DpnII)
+#9) numero di threads da utilizzare
+#10) se i fastq dati in input alla pipe sono shallow (true) o sono fastq interi (false). Se sono shallow, uso tadbit per intero, altrimenti mi limito ai quality plots
 
 
 import pytadbit
@@ -45,8 +43,9 @@ resolution = int(sys.argv[5])  #1000000   #ciò che do in input come argomento �
 res = str(resolution)
 genome_gem = sys.argv[6]
 genome = sys.argv[7]
-threads = sys.argv[8]
-is_shallow = sys.argv[9] #check if samples are shallow or not. Se non lo sono, allora facciamo solo il quality plot, altrimenti eseguiamo tadbit per intero. Motivo: tadbit è troppo oneroso da eseguire su fastq enormi, non shallow.
+enzymes = sys.argv[8]
+threads = sys.argv[9]
+is_shallow = sys.argv[10] #check if samples are shallow or not. Se non lo sono, allora facciamo solo il quality plot, altrimenti eseguiamo tadbit per intero. Motivo: tadbit è troppo oneroso da eseguire su fastq enormi, non shallow.
 
 #salvo nelle variabili i path delle directory dove verranno salvati gli output di tadbit
 mapped_reads_path = os.path.join(out_dir, 'mapped_reads')					#dir in cui salverà i file full e frag prodotti dal mapping con gem
@@ -62,8 +61,6 @@ if not isExist:
 else:
 	print("The directory", fastq_quality_plots_path, "already exist", "\n")
 
-
-enzymes = ['DpnII']
 
 
 #Tadbit reads fastq quality plot
