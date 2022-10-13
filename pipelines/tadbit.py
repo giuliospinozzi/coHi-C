@@ -35,17 +35,17 @@ from pytadbit.mapping.analyze import plot_strand_bias_by_distance
 #print("Current working directory: {0}".format(os.getcwd()))
 
 #salvo nelle variabili gli argomenti dati in input
-sample = sys.argv[1]   #dato che i nomi dei file fastq sono spesso diversi, è difficile capire come individuare il nome del sample. Per il momento propongo di darglielo direttamente in input
-r1_path = sys.argv[2] #abs path di r1 di un sample
-r2_path = sys.argv[3] #abs path di r2 di un sample
-out_dir = sys.argv[4]  #directory dei results (al cui interno avrò le 3 subdirectories citate nei prerequisiti)
-resolution = int(sys.argv[5])  #1000000   #ciò che do in input come argomento è sempre una stringa. quindi la trasformo in integer
+sample = sys.argv[0]   #dato che i nomi dei file fastq sono spesso diversi, è difficile capire come individuare il nome del sample. Per il momento propongo di darglielo direttamente in input
+r1_path = sys.argv[1] #abs path di r1 di un sample
+r2_path = sys.argv[2] #abs path di r2 di un sample
+out_dir = sys.argv[3]  #directory dei results (al cui interno avrò le 3 subdirectories citate nei prerequisiti)
+resolution = int(sys.argv[4])  #1000000   #ciò che do in input come argomento è sempre una stringa. quindi la trasformo in integer
 res = str(resolution)
-genome_gem = sys.argv[6]
-genome = sys.argv[7]
-enzymes = sys.argv[8]
-threads = sys.argv[9]
-is_shallow = sys.argv[10] #check if samples are shallow or not. Se non lo sono, allora facciamo solo il quality plot, altrimenti eseguiamo tadbit per intero. Motivo: tadbit è troppo oneroso da eseguire su fastq enormi, non shallow.
+genome_gem = sys.argv[5]
+genome = sys.argv[6]
+enzymes = sys.argv[7]
+threads = sys.argv[8]
+is_shallow = sys.argv[9] #check if samples are shallow or not. Se non lo sono, allora facciamo solo il quality plot, altrimenti eseguiamo tadbit per intero. Motivo: tadbit è troppo oneroso da eseguire su fastq enormi, non shallow.
 
 #salvo nelle variabili i path delle directory dove verranno salvati gli output di tadbit
 mapped_reads_path = os.path.join(out_dir, 'mapped_reads')					#dir in cui salverà i file full e frag prodotti dal mapping con gem
