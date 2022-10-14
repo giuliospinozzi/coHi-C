@@ -15,6 +15,7 @@ import pytadbit
 from pytadbit.mapping.mapper import full_mapping
 import os
 import sys
+import shutil
 #import re
 #from re import search
 
@@ -139,7 +140,8 @@ if is_shallow == "true":
 
 
 	#remove the "uniquely_mapped_reads" directory to save space (we don't need it anymore)
-	os.rmdir(uniquely_mapped_reads_path)
+	shutil.rmtree('uniquely_mapped_reads_path')
+	
 
 elif is_shallow == "false":
 	print("Samples are not shallow sequences. Skip other tadbit steps")
