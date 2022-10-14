@@ -140,7 +140,7 @@ if is_shallow == "true":
 
 
 	#remove the "uniquely_mapped_reads" directory to save space (we don't need it anymore)
-	shutil.rmtree('uniquely_mapped_reads_path')
+	shutil.rmtree(uniquely_mapped_reads_path)
 	
 
 elif is_shallow == "false":
