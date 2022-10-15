@@ -6,7 +6,6 @@
 #scriptsDir (-D): la directory contenente gli SCRIPT di juicer (/opt/applications/scripts/juicer)
 #topDir (-d): la directory che conterrà gli output prodotti con juicer (lo script crea "juicer_out" e la rendo cwd. cwd è topDir di default)
 
-#site_file (option -y): il file con i restriction enzyimes sites. Devo averne uno nella apposita dir "restriction_sites" nella juice_
 
 
 
@@ -18,6 +17,7 @@ usageHelp="Usage: ${0##*/} [-a assoc_file] [-D scriptsDir] [-g genomeID] \n [-z 
 scriptsDirHelp="* [scriptsDir] is the absolute path of the directory containing the main script, which must be present in the same directory of "scripts" directory, in which must be hicexplorer_hicrep_TIGET.sh, tadbit_TIGET.sh, juicer_TIGET.sh and the "common" directory containing all the scripts called by juicer"
 genomeHelp="* [genomeID] e.g. \"hg19\" or \"mm10\" \n [genome_fa] is the absolute path of the .fa file of the reference genome. This file should be present in the same directory with the .fa index files. \n [genome_gem] is the absolute path to the .gem file of the reference genome"
 siteHelp="* [restriction enzyme]: enter the name of the restriction enzyme" 
+site_fileHelp="* [restriction site file]: enter path for restriction site file"
 tadbitResolutionHelp="* [tadbit_resolution] is the resolution that will be utilized by tadbit to make plots"
 hicexplorerResolutionHelp="* [hicexplorer_resolution] could be a single value or a list of value divided by a comma. hicexplorer will be executed for each sample, for each indicated resolution"
 threadsHelp="* [threads]: number of threads when running tadbit full_mapping, juicer BWA alignment, hicexplorer hicFindTADs, hicDetectLoops, hicDifferentialTAD "
@@ -29,6 +29,7 @@ printHelpAndExit() {
     echo -e "$scriptsDirHelp"
     echo -e "$genomeHelp"  #(description of genomeID, genome_fa e genome_gem)
     echo -e "$siteHelp"
+    echo -e "$site_fileHelp"
 	echo -e "$tadbitResolutionHelp"
 	echo -e "$hicexplorerResolutionHelp"
     echo -e "$threadsHelp"
@@ -39,7 +40,7 @@ printHelpAndExit() {
 }
 
 
-while getopts "a:D:g:z:m:s:p:r:R:t:l:h:" opt; do
+while getopts "a:D:g:z:m:s:p:r:R:t:l:y:h:" opt; do
     case $opt in
 	a) assoc_file=$OPTARG ;;   #file di associazione (.tsv)
 	D) scriptsDir=$OPTARG ;;	   #path alla directory contenente gli script di juicer (script.sh e dir common DEVONO essere nella stessa directory)	(ex juiceDir)
@@ -52,6 +53,7 @@ while getopts "a:D:g:z:m:s:p:r:R:t:l:h:" opt; do
 	R) hicexplorer_resolution=$OPTARG ;;
 	t) threads=$OPTARG ;;       #num of threads (option -t juicer)
 	l) is_shallow=$OPTARG ;;    #true or false. se true, allora tadbit verrà eseguito per intero. Se false, verrà eseguito solo il quality plot. Questo perchè è molto oneroso sui fastq enormi. Se non true e non false, raise error
+        y) site_file=$OPTARG ;; #abs path of the restriction site file .txt (-y juicer). Default: if -y is not used, juicer takes the site file matching "${scriptDir}/restriction_sites/${genomeID}_${site}.txt"
 	h) printHelpAndExit 0;;
 	
 	[?]) printHelpAndExit 1;;
@@ -88,7 +90,7 @@ do
   cd ${arr[2]}/${arr[0]}/juicer_results #setting juicer_results dir of sample i as working directory. Important because default "topDir" in juicer.sh is the cwd. So topDir will be juicer_results (and it will change at each interaction, for each sample)
 
   # -d juicer arguments is "topDir". We don't specity it since, by default it is cwd. -n = sample name
-  bash ${scriptsDir}/juicer.sh -D ${scriptsDir} -g ${genomeID} -p ${genomePath} -z ${genome_fa} -n ${arr[0]} -s ${site} -u ${fastq1} -v ${fastq2} -t ${threads} 
+  bash ${scriptsDir}/juicer.sh -D ${scriptsDir} -g ${genomeID} -p ${genomePath} -z ${genome_fa} -n ${arr[0]} -s ${site} -y ${site_file} -u ${fastq1} -v ${fastq2} -t ${threads} 
 
 done < <(tail -n +2 ${assoc_file}) #providing association file and skipping header
 
