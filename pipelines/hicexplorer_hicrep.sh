@@ -12,8 +12,7 @@ MAXTHREADS=$4
 
 #Arrays for Normalization of muliple samples
 types_t=()     #initializing empty array that will contain the type of treatment of treated samples (es: T1, T2 ecc)
-num_rows_no_none=0  #inizializzo un contatore che conterà quante sono le righe del file .tsv riguardanti campioni trattamento. e quindi quanti sono i campioni trattamento, qualsiasi sia il trt.
-					#questa variabile credo non servi più a nulla. Era un'idea iniziale, non più elaborata. confermarlo con il run dello script con dati reali
+
 
 #Arrays for HICREP steps
 all_samples_names=()   #initializing an empty array that will contain all samples names, both treated and untreated ones
@@ -58,7 +57,6 @@ do
   if [[ ! " ${types_t[*]} " =~ " ${arr[4]} " ]]; then
      types_t+=(${arr[4]})                                    #saving treatment type name in the "types_t" array
   fi
-     num_rows_no_none=$((num_rows_no_none + 1))              #incrementa il contatore ogni volta che legge una riga di un campione treated
 
 
   printf "\n >>>>>>>>> ${arr[0]} --> hicConvertFormat \n"
@@ -68,9 +66,7 @@ do
 
 done < <(tail -n +2 ${FILE})                                     #fornisco il file da leggere e dico che voglio leggere dalla linea 2 (skippo l'header)
 
-echo "il num di righe non None (e quindi il numero di sample trattati) è: ${num_rows_no_none}"
 echo "Samples treatments types are: ${types_t[@]}"
-
 
 
 ### 2° CYCLE OF ASSOCIATION FILE READING ###
@@ -80,7 +76,7 @@ echo "Samples treatments types are: ${types_t[@]}"
 
 for t in ${types_t[@]}; #iterating for each treatment type
 do
-   echo "Considering treatment $t to indicate the cycle"
+   printf "\n * Considering treatment $t to indicate the cycle * \n"
    sample_names=()                                       #will contain sample names of samples having the t treatment type 
    norm_input_trt=()						             #will contain path of .h5 matrices of sample having t treatment type 
    norm_output_trt=()			                       	 #will contain path of normalized.h5 matrices, output of hicNormalize
@@ -103,7 +99,8 @@ do
       echo "Final command is:  hicNormalize -m ${norm_input_trt[@]} -n smallest -o ${norm_output_trt[@]}"
 
       printf "\n"
-      echo ">>>>>>>>> hicNormalize - normalizing together samples treated with treatment ${t}: ${sample_names[@]} "
+      echo ">>>>>>>>> hicNormalize - normalizing together samples treated with treatment ${t}: ${sample_names[@]}"
+      printf "\n"
       hicNormalize -m $(echo "${norm_input_trt[@]}") -n smallest -o $(echo "${norm_output_trt[@]}")                                
 
 done
@@ -139,7 +136,7 @@ do
   fi
 
 # saving path of T samples in "treated" array and path of UT samples in "untreated" array for differential TADs analysis #
-   if [[ ${arr[4]} = "T" ]]; then
+   if [[ ${arr[3]} = "T" ]]; then
       echo "Adding sample name "${arr[0]}" to treated array" 
       treated+=(${arr[0]})
    else
@@ -159,7 +156,7 @@ echo "Untreated samples are: ${untreated[@]}"
   for t_sample in ${treated[@]}; do
      for ut_sample in ${untreated[@]}; do
 
-      hicDifferentialTAD -cm ${project_path[0]}/${ut_sample}/${RESOLUTION}_resolution/inter_30_${RESOLUTION}_corrected.h5 -tm ${project_path[0]}/${t_sample}/${RESOLUTION}_resolution/inter_30_${RESOLUTION}_corrected.h5 -td ${project_path[0]}/${t_sample}/${RESOLUTION}_resolution/tads_hic_corrected_domains.bed -o ${project_path[0]}/diff_TADs_analysis/${RESOLUTION}_resolution/differential_tads_${ut_sample}-${t_sample} -p 0.01 -t 4 -mr all --threads ${MAXTHREADS}
+      hicDifferentialTAD -cm ${project_path[0]}/${ut_sample}/hicexplorer_results/${RESOLUTION}_resolution/inter_30_${RESOLUTION}_corrected.h5 -tm ${project_path[0]}/${t_sample}/hicexplorer_results/${RESOLUTION}_resolution/inter_30_${RESOLUTION}_corrected.h5 -td ${project_path[0]}/${t_sample}/hicexplorer_results/${RESOLUTION}_resolution/tads_hic_corrected_domains.bed -o ${project_path[0]}/diff_TADs_analysis/${RESOLUTION}_resolution/differential_tads_${ut_sample}-${t_sample} -p 0.01 -t 4 -mr all --threads ${MAXTHREADS}
 
       done
   done
@@ -179,7 +176,7 @@ Rscript --vanilla ${R_PLOTS_SCRIPT_DIR}/TADs_loops_plots.R ${FILE} ${RESOLUTION}
 
 
 ### HICREP ###  - usa la matrice .mcool, quindi quest' analisi non differisce in base alla normalizzazione utilizzata, ma differisce in base alla risoluzione
-#miglorare questa parte dei parametri in base alla risoluzione: e se ho risoluzioni diverse da 5000 e 10000? E se ne ho più di due? Risolvere
+#migliorare questa parte dei parametri in base alla risoluzione: e se ho risoluzioni diverse da 5000 e 10000? E se ne ho più di due? Risolvere
 
 
 #setup of "h" parameter according to resolution (binSize)
