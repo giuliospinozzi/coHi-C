@@ -45,6 +45,8 @@ then
     rm aligned/abnormal.sam
     pigz aligned/collisions.txt
     rm aligned/unmapped.sam
+    pigz aligned/collisions_dups.txt
+    pigz aligned/collisions_nodups.txt
 else 
     echo "Problem: The sum of merged_nodups and the dups files is not the same size as merged_sort.txt"
     echo "Did NOT clean up";
