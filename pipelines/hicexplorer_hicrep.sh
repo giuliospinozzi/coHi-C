@@ -1,8 +1,5 @@
 #!/bin/bash
 
-#le colonne del file tabulato sono fisse
-#non è importante in quale cartella si runna lo script
-#a differenza dello script in cui si normalizza ogni sample da solo, qui la logica dello script è un pò diversa.
 
 FILE=$1
 RESOLUTION=$2
@@ -41,10 +38,6 @@ do
   
   if [ ! -e "${arr[2]}/hicrep_results/${RESOLUTION}_resolution" ]; then
   	mkdir -p ${arr[2]}/hicrep_results/${RESOLUTION}_resolution
-  fi
-  
-  if [ ! -e "${arr[2]}/diff_TADs_analysis/${RESOLUTION}_resolution" ]; then
-  	mkdir -p ${arr[2]}/diff_TADs_analysis/${RESOLUTION}_resolution
   fi
 
   #salvo i path piu utilizzati in variabili, cosi da snellire il codice
@@ -151,26 +144,41 @@ done < <(tail -n +2 ${FILE})
 echo "Treated samples are: ${treated[@]}"
 echo "Untreated samples are: ${untreated[@]}"
 
+
+
+### If samples are all treated or all untreated, no differential TADs analysis is performed. Passing "diffTADs" variable as arguments of TADs_loops_plots.R script. If analysis is performed, it creates differential TADs barplot and dataframe. ###
+if [[ ${#treated[@]} -eq 0 ]] || [[ ${#untreated[@]} -eq 0 ]]; then
+	diffTADs="false"
+	printf "\n !! Differential TADs analysis will not be executed: hicDifferentialTAD needs both treated and untreated samples !! \n"
+else
+	diffTADs="true"
+	
+	if [ ! -e "${arr[2]}/diff_TADs_analysis/${RESOLUTION}_resolution" ]; then
+  		mkdir -p ${arr[2]}/diff_TADs_analysis/${RESOLUTION}_resolution
+	fi
+
 ### Differential TADs analysis ###
-  printf "\n >>>>>>>>>> hicDifferentialTAD \n"
-  for t_sample in ${treated[@]}; do
-     for ut_sample in ${untreated[@]}; do
+	printf "\n >>>>>>>>>> hicDifferentialTAD \n"
+	for t_sample in ${treated[@]}; do
+		for ut_sample in ${untreated[@]}; do
 
-      hicDifferentialTAD -cm ${project_path[0]}/${ut_sample}/hicexplorer_results/${RESOLUTION}_resolution/inter_30_${RESOLUTION}_corrected.h5 -tm ${project_path[0]}/${t_sample}/hicexplorer_results/${RESOLUTION}_resolution/inter_30_${RESOLUTION}_corrected.h5 -td ${project_path[0]}/${t_sample}/hicexplorer_results/${RESOLUTION}_resolution/tads_hic_corrected_domains.bed -o ${project_path[0]}/diff_TADs_analysis/${RESOLUTION}_resolution/differential_tads_${ut_sample}-${t_sample} -p 0.01 -t 4 -mr all --threads ${MAXTHREADS}
+    hicDifferentialTAD -cm ${project_path[0]}/${ut_sample}/hicexplorer_results/${RESOLUTION}_resolution/inter_30_${RESOLUTION}_corrected.h5 -tm ${project_path[0]}/${t_sample}/hicexplorer_results/${RESOLUTION}_resolution/inter_30_${RESOLUTION}_corrected.h5 -td ${project_path[0]}/${t_sample}/hicexplorer_results/${RESOLUTION}_resolution/tads_hic_corrected_domains.bed -o ${project_path[0]}/diff_TADs_analysis/${RESOLUTION}_resolution/differential_tads_${ut_sample}-${t_sample} -p 0.01 -t 4 -mr all --threads ${MAXTHREADS}
 
-      done
-  done
+		done
+	done
+
+fi
 
 
-### R script that creates dataframes and barplots of number of TADs and loops per sample and of number of differential TADs per samples comparison ###
-printf "\n >>>>>>>>>> Creating dataframes and barplots of number of TADs and loops per sample and number of differential TADs per sample comparison: \n"
+### R script that creates dataframes and barplots of number of TADs and loops per sample and of number of differential TADs per samples comparison if differential TADs analysis is performed###
+printf "\n >>>>>>>>>> Creating dataframes and barplots of number of TADs and loops per sample and number of differential TADs per sample comparison if differential TADs analysis is performed: \n"
 
   if [ ! -e "${project_path[0]}/stats_plots/${RESOLUTION}_resolution" ]; then
   	mkdir -p ${project_path[0]}/stats_plots/${RESOLUTION}_resolution
   fi
 
-#need association file, resolution used in hicexplorer and project path
-Rscript --vanilla ${R_PLOTS_SCRIPT_DIR}/TADs_loops_plots.R ${FILE} ${RESOLUTION} ${project_path[@]}
+#need association file, resolution used in hicexplorer, project path and diffTADs parameter
+Rscript --vanilla ${R_PLOTS_SCRIPT_DIR}/TADs_loops_plots.R ${FILE} ${RESOLUTION} ${project_path[@]} ${diffTADs}
 																																																																																	
 
 
@@ -203,6 +211,13 @@ for sample1 in ${all_samples_names[@]}; do
 done
 
 																																																					    
+
+
+
+
+
+
+
 
 
 

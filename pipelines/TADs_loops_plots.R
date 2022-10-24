@@ -12,7 +12,7 @@ args = commandArgs(trailingOnly=TRUE)
 path_tsv <- args[1] #path of association file
 resolution <- args[2] #resolution used in hicexplorer
 project_path <- args[3] #path of project directory that contains all the samples output
-
+diff_tads <- args[4] #true if differential TADs analysis has been performed, false otherwise (we have all treated or all untreated samples)
 
 association_file <- read.table(file = path_tsv, sep = '\t', header = TRUE) #open association file
 samples <- association_file[, 1] #saving samples names
@@ -52,7 +52,7 @@ rownames(TADs_Loops_df) <- samples
 name <- paste(project_path, "/stats_plots/", resolution, "_resolution/", "TADs_Loops_df.csv", sep = "") #creating dataframe file name
 
 cat("Saving TADs and Loops dataframe as .csv file", "\n")
-write.csv(TADs_Loops_df, name, row.names = TRUE, sep = "\t")
+write.csv(TADs_Loops_df, name, row.names = TRUE)
 
 
 
@@ -67,16 +67,19 @@ cols <- hcl.colors(length(samples), "Zissou 1") #using this palette for barplot
 plot_N_TADs <- ggplot(TADs_Loops_df, aes(x = samples, y = N_TADs, fill = samples)) +
   geom_bar(stat = "identity" ) +
   theme(axis.title = element_text(size = 22 )) + #axis labels 
-  theme(axis.text = element_text(size = 16)) +
+  theme(axis.text.y = element_text(size = 16 )) +
+  theme(axis.text.x = element_blank()) +
   theme(legend.title = element_text(size = 18 )) +
   theme(legend.text = element_text(size = 16 )) + 
   scale_fill_manual(values=cols) # or + scale_fill_brewer(palette = "Dark2")
+
 
 #barplot of TADs mean length
 plot_mean_length_TADs <- ggplot(TADs_Loops_df, aes(x = samples, y = Mean_Length_TADs, fill = samples)) +
   geom_bar(stat = "identity" ) +
   theme(axis.title = element_text(size = 22 )) + #axis labels
-  theme(axis.text = element_text(size = 16)) +
+  theme(axis.text.y = element_text(size = 16 )) +
+  theme(axis.text.x = element_blank()) +
   theme(legend.title = element_text(size = 18 )) +
   theme(legend.text = element_text(size = 16 )) +
   scale_fill_manual(values=cols) # or + scale_fill_brewer(palette = "Dark2")
@@ -85,7 +88,8 @@ plot_mean_length_TADs <- ggplot(TADs_Loops_df, aes(x = samples, y = Mean_Length_
 plot_N_Loops <- ggplot(TADs_Loops_df, aes(x = samples, y = N_Loops, fill = samples)) +
   geom_bar(stat = "identity" ) +
   theme(axis.title = element_text(size = 22 )) + #axis labels
-  theme(axis.text = element_text(size = 16)) +
+  theme(axis.text.y = element_text(size = 16 )) +
+  theme(axis.text.x = element_blank()) +
   theme(legend.title = element_text(size = 18 )) +
   theme(legend.text = element_text(size = 16 )) +
   scale_fill_manual(values=cols) # or + scale_fill_brewer(palette = "Dark2")
@@ -96,7 +100,7 @@ plot_N_Loops <- ggplot(TADs_Loops_df, aes(x = samples, y = N_Loops, fill = sampl
 project_name <- unlist(strsplit(project_path, "/"))
 project_name <- project_name[length(project_name)]
 
-png(paste(project_path, "/stats_plots/", resolution, "_resolution/TADs_loops_plots.png",  sep = ""), width = 1400, height = 1000, units = "px")
+png(paste(project_path, "/stats_plots/", resolution, "_resolution/TADs_loops_plots.png",  sep = ""), width = 1400, height = 600, units = "px")
 
 plot_title <- paste(project_name, "-", "Res:", resolution,  sep = " ")
 
@@ -104,7 +108,7 @@ plot_title <- paste(project_name, "-", "Res:", resolution,  sep = " ")
 #arranging the three separated plots in one single figure 
 grouped_plots <- ggarrange(plot_N_TADs, plot_mean_length_TADs, plot_N_Loops, 
                            labels = c("A", "B", "C"),
-                           ncol = 2, nrow = 2)
+                           ncol = 3, nrow = 1, common.legend = TRUE, legend="right")
 
 #annotating figure with title
 annotate_figure(grouped_plots, top = text_grob(plot_title, 
@@ -118,92 +122,89 @@ dev.off()
 
 
 #### DIFFERENTIAL TADS DATAFRAME AND BARPLOT ####
-library(stringr)
 
-diff_TADs_path <- paste(project_path, "/diff_TADs_analysis/", resolution, "_resolution", sep = "") #path containing differential TADs files
-diff_TADs_df <- data.frame(matrix(ncol=6, nrow=0)) #initializing differential TADs dataframe
 
-rejected_files <- list.files(path=diff_TADs_path, pattern="*rejected.diff_tad", full.names=TRUE, recursive=FALSE)  
+if (diff_tads == "true") {
 
-comparisons <- c() #initializing samples comparison vector
-N_diff_TADs <- c() #initializing number of differential TADs vector
+	cat("Generating differential TADs barplot", "\n")
 
-#cycle to get number of differential TADs for each samples comparison
-for(i in 1:length(rejected_files)) {
+	library(stringr)
+
+	diff_TADs_path <- paste(project_path, "/diff_TADs_analysis/", resolution, "_resolution", sep = "") #path containing differential TADs files
+	diff_TADs_df <- data.frame(matrix(ncol=6, nrow=0)) #initializing differential TADs dataframe
+
+	rejected_files <- list.files(path=diff_TADs_path, pattern="*rejected.diff_tad", full.names=TRUE, recursive=FALSE)  
+
+	comparisons <- c() #initializing samples comparison vector
+	N_diff_TADs <- c() #initializing number of differential TADs vector
+
+	#cycle to get number of differential TADs for each samples comparison
+	for(i in 1:length(rejected_files)) {
   
-  rej_diff_TAD_table <- read.table(rejected_files[i])
+  	rej_diff_TAD_table <- read.table(rejected_files[i])
   
-  #extracting sample comparison from a differential tads file (es: "SAMPLE1-SAMPLE2")
-  conf <- rejected_files[i]
-  conf <- unlist(strsplit(conf, "/"))
-  conf <- conf[length(conf)]
-  conf <- str_remove(conf, "_rejected.diff_tad")
-  conf <- str_remove(conf, "differential_tads_")
+  	#extracting sample comparison from a differential tads file (es: "SAMPLE1-SAMPLE2")
+  	conf <- rejected_files[i]
+  	conf <- unlist(strsplit(conf, "/"))
+  	conf <- conf[length(conf)]
+  	conf <- str_remove(conf, "_rejected.diff_tad")
+  	conf <- str_remove(conf, "differential_tads_")
   
-  comparisons <- append(comparisons, conf) #append sample comparison to comparison vector
-  N_diff_TADs <- append(N_diff_TADs, length(rej_diff_TAD_table$V1)) #appending number of differential TADs for this samples comparison (it is equal to the number of rows in that file. each row is a differential TAD)
+  	comparisons <- append(comparisons, conf) #append sample comparison to comparison vector
+  	N_diff_TADs <- append(N_diff_TADs, length(rej_diff_TAD_table$V1)) #appending number of differential TADs for this samples comparison (it is equal to the number of rows in that file. each row is a differential TAD)
   
-}
+	}
 
-cat("Comparisons:", comparisons, "\n")
-cat("Number of differential TADs per comparison:", N_diff_TADs, "\n", "\n")
+	cat("Comparisons:", comparisons, "\n")
+	cat("Number of differential TADs per comparison:", N_diff_TADs, "\n", "\n")
 
-#creating dataframe with number of differential TADs
-diff_TADs_df <- data.frame(comparisons, N_diff_TADs)
-rownames(diff_TADs_df) <- diff_TADs_df[, 1]
-diff_TADs_df[, 1] <- NULL
-print(diff_TADs_df)
-cat("\n")
+	#creating dataframe with number of differential TADs
+	diff_TADs_df <- data.frame(comparisons, N_diff_TADs)
+	rownames(diff_TADs_df) <- diff_TADs_df[, 1]
+	diff_TADs_df[, 1] <- NULL
+	print(diff_TADs_df)
+	cat("\n")
 
-name_csv <- paste(project_path, "/stats_plots/", resolution, "_resolution/", "diff_TADs_df.csv", sep = "") #name of dataframe containing number of differential TADS
+	name_csv <- paste(project_path, "/stats_plots/", resolution, "_resolution/", "diff_TADs_df.csv", sep = "") #name of dataframe containing number of differential TADS
 
-cat("Saving number of differential TADs dataframe as .csv file", "\n")
-write.csv(diff_TADs_df, name_csv, row.names = TRUE, sep = "\t")
-
-
-
-#### BARPLOT of number of differential TADs for each samples comparison ####
-
-library(RColorBrewer)
-display.brewer.all()
-
-# PNG device
-png(paste(project_path, "/stats_plots/", resolution, "_resolution/diffTADs_plot.png",  sep = ""), width = 1400, height = 1000, units = "px")
+	cat("Saving number of differential TADs dataframe as .csv file", "\n")
+	write.csv(diff_TADs_df, name_csv, row.names = TRUE)
 
 
-cols <- hcl.colors(length(comparisons), "Zissou 1")
 
-diff_TADs_plot <- ggplot(diff_TADs_df, aes(x = comparisons, y = N_diff_TADs, fill = comparisons, )) +
-  geom_bar(stat = "identity" ) +
-  theme(axis.title = element_text(size = 22 )) + #i labes degli assi 
-  theme(axis.text = element_text(size = 16)) +
-  theme(legend.title = element_text(size = 18 )) +
-  theme(legend.text = element_text(size = 16 )) + 
-  scale_fill_manual(values=cols) # or + scale_fill_brewer(palette = "Dark2")
+	#### BARPLOT of number of differential TADs for each samples comparison ####
+	library(RColorBrewer)
+	display.brewer.all()
 
-plot_title <- paste(project_name, "-", "Res:", resolution,  sep = " ")
+	# PNG device
+	png(paste(project_path, "/stats_plots/", resolution, "_resolution/diffTADs_plot.png",  sep = ""), width = 1400, height = 1000, units = "px")
 
-#Adding title to figure with plot
-annotate_figure(diff_TADs_plot, top = text_grob(plot_title, 
+
+	cols <- hcl.colors(length(comparisons), "Zissou 1")
+
+	diff_TADs_plot <- ggplot(diff_TADs_df, aes(x = comparisons, y = N_diff_TADs, fill = comparisons, )) +
+  		geom_bar(stat = "identity" ) +
+  		theme(axis.title = element_text(size = 22 )) + #i labes degli assi 
+  		theme(axis.text.y = element_text(size = 16 )) +
+  		theme(axis.text.x = element_blank()) +
+  		theme(legend.title = element_text(size = 18 )) +
+  		theme(legend.text = element_text(size = 16 )) + 
+  		scale_fill_manual(values=cols) # or + scale_fill_brewer(palette = "Dark2")
+
+	plot_title <- paste(project_name, "-", "Res:", resolution,  sep = " ")
+
+	#Adding title to figure with plot
+	annotate_figure(diff_TADs_plot, top = text_grob(plot_title, 
                                                color = "firebrick2", face = "bold", size = 30))
 
-cat("Saving number of differential TADs barplot as .png file", "\n")
+	cat("Saving number of differential TADs barplot as .png file", "\n")
 
-# Close device
-dev.off()
+	# Close device
+	dev.off()
 
-
-
-
-
-
-
-
-
-
-
-
-
+} else {
+cat("No barplot for differential TADs. Differential TADs analysis has not be computed.", "\n")
+}
 
 
 
