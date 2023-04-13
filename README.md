@@ -90,7 +90,7 @@ Other input files that must be provided as arguments at the execution are:
 
 The indexes can be created starting from the Fasta file and require different commands based on the alignment software for which they will be used.
 
-In the case of Gem2, the necessary command is: (not sure)
+In the case of Gem2, the necessary command is:
 
 `gem-indexer -i genome.fasta -o genome_index`
 
