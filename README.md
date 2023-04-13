@@ -18,7 +18,27 @@ The entire workflow is executed once for each sample.
 
 ## Prerequisites
 
-...
+**basic install**\
+`conda create -n hic`\
+`conda install -c bioconda -c conda-forge python=3.8 hicexplorer`\
+`conda install -c bioconda tadbit hicup`
+
+`sudo pip3 install hicrep`\
+`pip3 install hic-straw`\
+`sudo apt-get install gawk`\
+`sudo update-alternatives --config awk`
+
+**Issues**\
+problems with cleanlab?\
+`conda install -c cf-staging -c bioconda -c conda-forge cleanlab=1.0.1 python=3.8 hicup`\
+or\
+`conda install -c cleanlab -c bioconda -c conda-forge cleanlab=1.0.1 python=3.8 hicup`\
+`conda install -c bioconda -c conda-forge hicexplorer tadbit`\
+`sudo pip3 install hiccup`\
+`pip3 install hic-straw`
+
+**Alternate install**\
+`conda env create -f hic.yml`
 
 ### Applications
 
